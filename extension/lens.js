@@ -47,6 +47,9 @@
     li{display:flex;gap:8px}
     .n{flex:none;width:20px;height:20px;border-radius:50%;color:#fff;font-size:11px;font-weight:700;display:grid;place-items:center}
     .harm{margin-top:10px;padding:10px 12px;border-radius:10px;background:#fef2f2;color:#991b1b}
+    .prov{margin-top:10px;padding:10px 12px;border-radius:10px;background:#eef4ff;color:#1e3a8a;font-size:13px}
+    .prov .id{font-family:ui-monospace,Consolas,monospace;font-size:12px}
+    .prov .ok{color:#067647;font-weight:600}
     .edits{margin:8px 0;padding:8px 10px;border-radius:10px;background:#f1f5f9;font-size:13px}
     .row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
     .row button{font:600 12.5px inherit;border-radius:8px;padding:6px 10px;border:1px solid #e3e6ee;background:#fff;color:#14161c;cursor:pointer}
@@ -238,6 +241,16 @@
     return `<p class="edits">${plain.length ? `<b>Filter:</b> ${plain.map(e => esc(e.what)).join(', ')}.${ai.length ? '' : ' A filter alone doesn\'t make a photo AI-made.'}` : ''}${ai.length ? ` <b>AI lens:</b> ${ai.map(e => esc(e.what)).join(', ')}, which redraws the picture.` : ''}</p>`;
   }
 
+  // Provenance: registered work this image matches, with who claimed it and the reuse terms.
+  function provenanceLine(p) {
+    if (!p?.matches?.length) return '';
+    const items = p.matches.slice(0, 3).map(m => `<p style="margin:6px 0"><b>${esc(m.relation_text)}</b> ${m.similarity}% similar.<br>
+      "${esc(m.title)}" by ${esc(m.creator)}${m.creator_verified ? ' <span class="ok">✓ verified creator</span>' : ''}<br>
+      <span class="id">${esc(m.content_id)}</span> · registered ${esc(String(m.registered_at).slice(0, 10))}<br>
+      ${esc(m.license_text)}${m.parent_id ? `<br>Made from <span class="id">${esc(m.parent_id)}</span>` : ''}</p>`).join('');
+    return `<div class="prov"><b>Registered work found</b>${items}<span class="sub" style="margin:0">${esc(p.note)}</span></div>`;
+  }
+
   function cardHtml(state) {
     const r = state.result;
     const [fg, bg] = LABEL_STYLE[r.verdict] || LABEL_STYLE.cant_tell;
@@ -249,6 +262,7 @@
       ${editsLine(r.edits)}
       ${priv.length ? `<p class="edits"><b>Blurred for privacy:</b> ${[...new Set(priv)].map(esc).join(', ')}.</p>` : ''}
       ${state.frame ? `<p class="sub" style="margin:0 0 8px">This is the frame at ${fmt(state.at)}. Press play and the outlines clear; check another frame any time.</p>` : ''}
+      ${provenanceLine(r.provenance)}
       ${r.harm?.harmful ? `<div class="harm"><b>${esc(HARM_SEEN[r.harm.category] || 'May be harmful')}.</b> ${esc(r.harm.reason)}${regions.length ? ' Blurred on your screen.' : ''}</div>` : ''}
       ${r.signs?.length ? `<h4>Evidence</h4><ol>${r.signs.map((s, i) => `<li><span class="n" style="background:#7c3aed">${i + 1}</span><span><b>${esc(s.what || 'Area')}</b>: ${esc(s.why)}</span></li>`).join('')}</ol>` : ''}
       ${(r.signs?.some(s => s.box) || regions.length) ? `<div class="row">

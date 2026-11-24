@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARGUS Provenance</title>
+<link rel="stylesheet" href="/pages.css">
+</head>
+<body>
+<main>
+  <header>
+    <svg viewBox="0 0 64 64" fill="none"><path d="M4 32C12 18 22 12 32 12s20 6 28 20c-8 14-18 20-28 20S12 46 4 32Z" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>
+    <h1>ARGUS Provenance</h1>
+  </header>
+  <p class="tag">Register your original image to get a Content ID and a signed record of your claim and reuse terms. ARGUS then recognises copies, crops and screenshots of it while people browse.</p>
+  <nav><a href="/lens">Lens</a><a href="/register" aria-current="page">Provenance</a><a href="/admin">Admin</a></nav>
+
+  <div class="grid">
+    <section class="card">
+      <h2>1 · Your image</h2>
+      <div class="drop" id="drop" tabindex="0" role="button" aria-label="Choose an image"><div id="dropText"><b>Drop an image here</b><br>or click to choose one (JPEG, PNG, WebP)</div><img id="preview" alt="" hidden></div>
+      <input type="file" id="file" accept="image/*" hidden>
+      <p class="muted" id="fp"></p>
+      <div id="matches"></div>
+    </section>
+
+    <section class="card">
+      <h2>2 · Register it</h2>
+      <form id="form">
+        <label for="title">Title</label><input id="title" maxlength="120" required placeholder="Sunset over Marina Beach">
+        <label for="creator">Creator</label><input id="creator" maxlength="80" required placeholder="Your name">
+        <label for="account">Your account <span class="hint">(optional, e.g. instagram:yourname or youtube:@channel. Shows "verified creator" if it holds an ARGUS credential)</span></label><input id="account" maxlength="100">
+        <label for="license">Reuse permission</label>
+        <select id="license">
+          <option value="all-rights-reserved">All rights reserved: ask me before reusing</option>
+          <option value="credit-required">Free to share with credit</option>
+          <option value="cc-by">CC BY: reuse and adapt with credit</option>
+          <option value="cc-by-nc">CC BY-NC: with credit, not commercial</option>
+          <option value="no-derivatives">Share unchanged with credit; no edits</option>
+        </select>
+        <label for="source">Where you first posted it <span class="hint">(optional)</span></label><input id="source" type="url" placeholder="https://">
+        <label for="parent">Made from another registered work? <span class="hint">(its Content ID, for edits and remixes)</span></label><input id="parent" placeholder="ARGUS-XXXXXXXXXXXX">
+        <button class="primary" id="go" disabled>Register</button>
+      </form>
+      <div id="result"></div>
+    </section>
+  </div>
+
+  <section class="card" style="margin-top:20px">
+    <h2>Look up a Content ID</h2>
+    <form id="lookup" class="row" style="margin:0"><input id="cid" placeholder="ARGUS-XXXXXXXXXXXX" style="flex:1;min-width:200px"><button class="small">Look up</button></form>
+    <div id="lineage"></div>
+  </section>
+  <p class="muted" style="margin-top:16px">Only the image's fingerprints are sent to the server, never the image. A match shows two images are probably related; it is not proof of ownership or of unauthorised reuse.</p>
+</main>
+<script src="/phash.js"></script>
+<script src="/register.js"></script>
+</body>
+</html>

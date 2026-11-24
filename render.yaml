@@ -14,6 +14,8 @@ services:
         sync: false
       - key: ARGUS_EXTENSION_KEY     # lets the browser extension past the password
         sync: false
+      - key: ARGUS_ADMIN_SECRET      # opens /admin (reviewer queue, credentials)
+        sync: false
       - key: MINIMAX_API_KEY         # moderator fallback once Nemotron credits are used up
         sync: false
       - key: MINIMAX_MODEL

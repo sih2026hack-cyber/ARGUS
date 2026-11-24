@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARGUS Admin</title>
+<link rel="stylesheet" href="/pages.css">
+</head>
+<body>
+<main>
+  <header>
+    <svg viewBox="0 0 64 64" fill="none"><path d="M4 32C12 18 22 12 32 12s20 6 28 20c-8 14-18 20-28 20S12 46 4 32Z" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>
+    <h1>ARGUS Admin</h1>
+  </header>
+  <p class="tag">Human review for comments the AI couldn't decide, identity credentials for accounts and AI agents, and the content registry.</p>
+  <nav><a href="/lens">Lens</a><a href="/register">Provenance</a><a href="/admin" aria-current="page">Admin</a></nav>
+
+  <section class="card" id="login">
+    <h2>Admin key</h2>
+    <p class="muted" style="margin-top:0">Set by ARGUS_ADMIN_SECRET. When running locally without one, the server prints a key for this run when it starts.</p>
+    <form id="keyForm" class="row"><input id="key" type="password" autocomplete="off" style="flex:1;min-width:220px" aria-label="Admin key"><button class="small">Open</button></form>
+    <div id="keyError"></div>
+  </section>
+
+  <div id="app" hidden>
+    <nav id="tabs">
+      <button data-tab="review" class="on">Review queue <span id="count"></span></button>
+      <button data-tab="identity">Identity credentials</button>
+      <button data-tab="registry">Content registry</button>
+      <button id="logout" style="margin-left:auto">Lock</button>
+    </nav>
+
+    <section id="review" class="card">
+      <div class="top" style="display:flex;justify-content:space-between;align-items:center;gap:10px"><h2 style="margin:0">Waiting for a person</h2><button class="small" id="refresh">Refresh</button></div>
+      <p class="muted">"Unsure" comments wait here unposted until you approve or keep them back. "Severe" ones are shown for the record and can only be kept back. Unanswered reviews expire after 10 minutes and stay unposted.</p>
+      <div class="list" id="queue"></div>
+    </section>
+
+    <section id="identity" class="grid" hidden>
+      <div class="card">
+        <h2>Issue a credential</h2>
+        <p class="muted" style="margin-top:0">Issue one only after checking, outside ARGUS, that the account really belongs to who it claims (e.g. an email from the organisation's domain).</p>
+        <form id="issue">
+          <label for="type">This account is</label>
+          <select id="type"><option value="organization">The official account of an organisation</option><option value="person">A person</option><option value="agent">An AI agent run by an organisation</option></select>
+          <div class="grid" style="gap:10px;grid-template-columns:1fr 2fr">
+            <div><label for="platform">Platform</label><select id="platform"><option>youtube</option><option>instagram</option><option>reddit</option><option>x</option><option>linkedin</option><option>web</option></select></div>
+            <div><label for="handle">Handle</label><input id="handle" required placeholder="@channel or username"></div>
+          </div>
+          <label for="name">Name it represents</label><input id="name" required maxlength="100" placeholder="Anna University">
+          <div id="orgFields">
+            <label for="behalf">On behalf of <span class="hint" id="behalfHint">(organisation, optional for a person)</span></label><input id="behalf" maxlength="100">
+            <label for="role">Role <span class="hint">(optional, e.g. Press officer)</span></label><input id="role" maxlength="80">
+          </div>
+          <div id="perms" hidden><label>The agent may</label><div class="checks">
+            <label><input type="checkbox" value="reply_comments" checked> reply to comments</label>
+            <label><input type="checkbox" value="post"> post</label>
+            <label><input type="checkbox" value="send_messages"> send messages</label>
+            <label><input type="checkbox" value="moderate"> moderate</label>
+            <label><input type="checkbox" value="publish_content"> publish content</label></div></div>
+          <label for="evidence">How you checked <span class="hint">(kept in the credential)</span></label><input id="evidence" maxlength="200" placeholder="Confirmed by email from press@annauniv.edu">
+          <label for="days">Valid for (days)</label><input id="days" type="number" min="1" max="730" value="365">
+          <button class="primary">Issue and sign</button>
+        </form>
+        <div id="issued"></div>
+      </div>
+      <div class="card">
+        <h2>Issued credentials</h2>
+        <div class="list" id="creds"></div>
+        <h2 style="margin-top:20px">Check a credential</h2>
+        <textarea id="vc" placeholder="Paste a credential (JSON)" aria-label="Credential JSON"></textarea>
+        <button class="small" id="verify" style="margin-top:8px">Verify</button>
+        <div id="verified"></div>
+      </div>
+    </section>
+
+    <section id="registry" class="card" hidden>
+      <h2>Registered works (newest first)</h2>
+      <div class="list" id="works"></div>
+    </section>
+  </div>
+</main>
+<script src="/admin.js"></script>
+</body>
+</html>

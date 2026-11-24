@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node server.mjs",
-    "test": "node ai-moderator-plugin/test/test.mjs && node lens/test/test.mjs && node tests/test_profanity.mjs && node tests/test_post_context.mjs && node tests/test_extension_api.mjs && node tests/test_moderator_credits.mjs"
+    "test": "node ai-moderator-plugin/test/test.mjs && node lens/test/test.mjs && node tests/test_profanity.mjs && node tests/test_post_context.mjs && node tests/test_extension_api.mjs && node tests/test_trust.mjs && node tests/test_moderator_credits.mjs"
   },
   "engines": {
     "node": ">=22"

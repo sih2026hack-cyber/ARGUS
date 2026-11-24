@@ -2,6 +2,9 @@
 // stay on the server, the extension only knows its address (and an optional extension key).
 //   Comment moderator (moderator.js): check / peek / suggest / status → /api/ext/*
 //   Argus Lens (lens.js): assess an image, or a frame of a video → /api/lens/assess
+//   Provenance (phash.js): the image's fingerprint is matched against registered work → /api/provenance/match
+//   Identity (identity.js): credentials for the author of the post you are viewing → /api/identity/lookup
+importScripts('phash.js');
 const DEFAULT_SERVER = 'http://localhost:8787';
 const UNAVAILABLE = "We couldn't check this comment right now, so it hasn't been posted. Please try again in a moment.";
 
@@ -51,7 +54,28 @@ const assessBlob = blob => call('/api/lens/assess', { method: 'POST', body: blob
 async function assess(url) {
   const blob = await imageBytes(url);
   if (blob.size > 10 * 1024 * 1024) throw new Error('Images up to 10 MB.');
-  return assessBlob(blob);
+  // The AI/harm check and the registered-work check run side by side; a failed provenance lookup
+  // never hides the Lens verdict.
+  const [result, provenance] = await Promise.all([assessBlob(blob), provenanceOf(blob)]);
+  return { ...result, provenance };
+}
+async function provenanceOf(blob) {
+  try {
+    const { phash, sha256 } = await self.argusFingerprint(blob);
+    const found = await postJson('/api/provenance/match', { phash, sha256 });
+    return found && !found.error ? found : null;
+  } catch { return null; }
+}
+
+// ---- Identity ----
+const people = new Map(); // account → { result, at }
+async function identityLookup({ platform, handle, name }) {
+  const key = `${platform}:${handle}:${name || ''}`, hit = people.get(key);
+  if (hit && Date.now() - hit.at < 10 * 60_000) return hit.result;
+  const result = await call(`/api/identity/lookup?${new URLSearchParams({ platform, handle, name: name || '' })}`);
+  people.set(key, { result, at: Date.now() });
+  if (people.size > 300) people.delete(people.keys().next().value);
+  return result;
 }
 
 // Each image is checked once: results are remembered by image address (and a check already
@@ -108,6 +132,7 @@ const frames = new Map(); // tab id → the frame just captured
 chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   if (['check', 'status', 'peek', 'suggest'].includes(msg?.type)) { moderate(msg).then(reply); return true; }
   if (msg?.type === 'assess') { lensCheck(msg).then(reply, err => reply({ error: err.message })); return true; }
+  if (msg?.type === 'identity') { identityLookup(msg).then(reply, err => reply({ error: err.message })); return true; }
   if (msg?.type === 'captureFrame') {
     // Step 1 replies as soon as the screenshot is taken, so the page can show its buttons again.
     captureFrame(sender.tab, msg.rect, msg.dpr).then(blob => { frames.set(sender.tab.id, blob); reply({ ok: true }); }, err => reply({ error: err.message }));

@@ -1,0 +1,46 @@
+/* Shared styles for the ARGUS /register and /admin pages (same palette as the Lens page). */
+:root{--bg:#f5f6fa;--surface:#fff;--text:#14161c;--muted:#5d6272;--line:#e3e6ee;--accent:#6d28d9;--accent-bg:#f3efff;
+  --ok:#047857;--ok-bg:#ecfdf5;--warn:#b45309;--warn-bg:#fffbeb;--harm:#b91c1c;--harm-bg:#fef2f2;--info:#1e3a8a;--info-bg:#eef4ff}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0f17;--surface:#151826;--text:#eef0f7;--muted:#a1a7bb;--line:#272b3d;
+  --accent:#c4b5fd;--accent-bg:#2a1f4d;--ok:#6ee7b7;--ok-bg:#0f2e25;--warn:#fcd34d;--warn-bg:#33270e;--harm:#fca5a5;--harm-bg:#3a1517;--info:#bfdbfe;--info-bg:#172554}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 'Segoe UI',system-ui,sans-serif}
+main{max-width:1100px;margin:0 auto;padding:32px 16px 60px}
+header{display:flex;align-items:center;gap:12px;margin-bottom:4px}
+header svg{width:32px;height:32px;flex:none;color:var(--accent)}
+h1{font-size:25px;letter-spacing:-.5px;margin:0}
+h2{font-size:13px;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:0 0 12px}
+nav{display:flex;gap:6px;flex-wrap:wrap;margin:18px 0}
+nav a,nav button{font:600 14px inherit;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);text-decoration:none;cursor:pointer}
+nav [aria-current="page"],nav .on{background:var(--accent);border-color:var(--accent);color:#fff}
+.tag{color:var(--muted);margin:0 0 8px}
+.grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start}
+@media (max-width:820px){.grid{grid-template-columns:1fr}}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;min-width:0}
+label{display:block;font-weight:600;font-size:13px;margin:12px 0 4px}
+.hint{font-weight:400;color:var(--muted)}
+input,select,textarea{width:100%;font:14px inherit;padding:9px 11px;border-radius:10px;border:1px solid var(--line);background:var(--bg);color:var(--text)}
+textarea{min-height:110px;font-family:ui-monospace,Consolas,monospace;font-size:12.5px}
+.checks{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:14px}
+.checks label{display:flex;align-items:center;gap:6px;font-weight:400;margin:0}
+.checks input{width:auto}
+button.primary{margin-top:16px;font:600 15px inherit;padding:10px 18px;border:0;border-radius:10px;background:var(--accent);color:#fff;cursor:pointer}
+button.primary:disabled{opacity:.5;cursor:default}
+button.small{font:600 13px inherit;padding:6px 11px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+button.good{border-color:var(--ok);color:var(--ok)} button.bad{border-color:var(--harm);color:var(--harm)}
+.drop{display:grid;place-items:center;text-align:center;min-height:180px;border:2px dashed var(--line);border-radius:14px;cursor:pointer;color:var(--muted);padding:16px}
+.drop.over{border-color:var(--accent);color:var(--text)}
+.drop img{max-width:100%;max-height:260px;border-radius:10px}
+.note{margin-top:12px;padding:10px 12px;border-radius:10px;font-size:14px}
+.note.ok{background:var(--ok-bg);color:var(--ok)} .note.warn{background:var(--warn-bg);color:var(--warn)} .note.bad{background:var(--harm-bg);color:var(--harm)} .note.info{background:var(--info-bg);color:var(--info)}
+.mono{font-family:ui-monospace,Consolas,monospace;font-size:12.5px;overflow-wrap:anywhere}
+.list{display:grid;gap:10px}
+.item{border:1px solid var(--line);border-radius:12px;padding:12px 14px;min-width:0}
+.item .top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline}
+.pill{display:inline-block;font-size:12px;font-weight:700;padding:2px 9px;border-radius:999px;background:var(--accent-bg);color:var(--accent)}
+.pill.ok{background:var(--ok-bg);color:var(--ok)} .pill.warn{background:var(--warn-bg);color:var(--warn)} .pill.bad{background:var(--harm-bg);color:var(--harm)}
+.muted{color:var(--muted);font-size:13px}
+.quote{margin:8px 0;padding:8px 12px;border-left:3px solid var(--line);background:var(--bg);border-radius:0 8px 8px 0;overflow-wrap:anywhere}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+.empty{color:var(--muted);padding:18px 0;text-align:center}
+[hidden]{display:none!important}
