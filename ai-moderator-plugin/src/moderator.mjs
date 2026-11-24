@@ -110,6 +110,8 @@ export function createModerator({ call, cleanMax = 0.4, severeMin = 0.85, unsure
       unsure: out.sure === false && typeof out.meaning === 'string' && out.meaning.trim() !== '',
       // Swearing or vulgarity, harmful or not. Never changes the verdict; a suggestion must not have it.
       coarse: out.coarse === true,
+      // On-topic for the post? Only meaningful with post context; never changes the verdict.
+      relevance: ctx && ['on_topic', 'off_topic', 'unclear'].includes(out.relevance) ? out.relevance : null,
     };
   }
 
@@ -174,10 +176,10 @@ export function createModerator({ call, cleanMax = 0.4, severeMin = 0.85, unsure
 
     // The typing hint can only make things stricter, never looser.
     if (inspectDraft(original).hint === 'threat' && scored.score < severeMin) {
-      scored = { score: severeMin, category: 'threat', reason: 'This reads as a threat to hurt someone, whatever you meant by it. It can\'t be posted.' };
+      scored = { relevance: scored.relevance, score: severeMin, category: 'threat', reason: 'This reads as a threat to hurt someone, whatever you meant by it. It can\'t be posted.' };
     }
 
-    const base = { score: scored.score, category: scored.category, reason: scored.reason, meaning: scored.meaning ?? '', context: ctx };
+    const base = { score: scored.score, category: scored.category, reason: scored.reason, meaning: scored.meaning ?? '', context: ctx, relevance: ctx ? scored.relevance ?? null : null };
     const label = (verdict) => labelFor(verdict, scored.category);
     if (scored.score >= severeMin) return { allowed: false, verdict: 'severe', ...base, label: label('severe'), suggestion: null };
     // Can't read it with confidence: don't guess either way — a person decides. Models rarely

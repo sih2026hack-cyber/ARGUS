@@ -37,7 +37,7 @@ async function loadQueue() {
   $('queue').innerHTML = q.length ? q.map(x => {
     const [tone, label] = VERDICT[x.verdict] || ['', x.verdict];
     return `<div class="item" data-id="${esc(x.id)}">
-      <div class="top"><span><span class="pill ${tone}">${esc(label)}</span> ${x.site ? `<span class="muted">on ${esc(x.site)}</span>` : ''}</span>
+      <div class="top"><span><span class="pill ${tone}">${esc(label)}</span> ${x.relevance === 'off_topic' ? '<span class="pill warn">off-topic</span> ' : ''}${x.site ? `<span class="muted">on ${esc(x.site)}</span>` : ''}</span>
         <span class="muted">${x.status === 'waiting' ? `expires ${esc(new Date(x.expires_at).toLocaleTimeString())}` : 'sent automatically'}</span></div>
       <div class="quote">${esc(x.text)}</div>
       ${x.meaning ? `<div class="muted">Reads as: ${esc(x.meaning)}</div>` : ''}

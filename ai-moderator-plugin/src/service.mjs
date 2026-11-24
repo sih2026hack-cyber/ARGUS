@@ -92,7 +92,7 @@ export function createModeratorService({ moderator = createModerator(), decision
       for (const item of decisions) await expire(item);
       return decisions.filter(x => x.review && !x.review.resolved_at).reverse().map(x => ({
         id: x.id, text: x.original_text, verdict: x.verdict, reason: x.reason, meaning: x.meaning || '',
-        site: x.site || null, context: x.context || null, score: x.score ?? null,
+        site: x.site || null, context: x.context || null, score: x.score ?? null, relevance: x.relevance ?? null,
         status: x.review.status, requested_at: x.review.requested_at,
         expires_at: x.review.status === 'waiting' ? new Date(Date.parse(x.review.requested_at) + reviewTimeoutMs).toISOString() : null,
       }));

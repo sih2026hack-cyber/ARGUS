@@ -405,7 +405,7 @@
 
   // Shows which post context the verdict was judged with (transparency).
   const contextLine = (r) => r && r.context
-    ? `<div class="muted">Judged with this post's context: ${esc(r.context.topic)} (${esc(r.context.sensitivity)} sensitivity)${r.context.reused ? ', reused from memory' : ''}.</div>`
+    ? `<div class="muted">Judged with this post's context: ${esc(r.context.topic)} (${esc(r.context.sensitivity)} sensitivity)${r.context.reused ? ', reused from memory' : ''}.${r.relevance === 'off_topic' ? ' It also seems off-topic for this post.' : ''}</div>`
     : '';
 
   async function check(composer, button, editor, text) {

@@ -16,6 +16,8 @@ export type ModerationResult = {
   suggestion: string | null;
   /** The post context the verdict was judged with (Context Memory), or null. */
   context?: PostContext | null;
+  /** With post context: is the comment about the post? Information only; never changes the verdict. */
+  relevance?: "on_topic" | "off_topic" | "unclear" | null;
 };
 
 export type PostContext = { topic: string; summary: string; sensitivity: "low" | "medium" | "high" };

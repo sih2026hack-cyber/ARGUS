@@ -55,8 +55,13 @@ function render(r, text) {
   const score = r.score != null ? `<div class="muted" style="margin-top:10px">Harm score ${Number(r.score).toFixed(2)} <span class="hint">(clean below 0.40, severe from 0.85)</span></div><div class="meter"><i style="width:${Math.round(r.score * 100)}%"></i></div>` : '';
   const rewrite = r.suggestion ? `<div class="rewrite"><b>A better way to say it:</b> ${esc(r.suggestion)}<div class="row"><button class="small" id="use">Use this</button></div></div>` : '';
   const posted = r.verdict === 'clean' ? `<div class="quote">${esc(text)}</div>` : '';
+  // Relevance never blocks: an off-topic comment still posts. It is shown because off-topic
+  // comments are often spam, bots or a reply meant for another post.
+  const relevance = r.context && r.relevance === 'off_topic'
+    ? `<div class="note warn"><b>Off-topic.</b> This doesn't seem related to the post (${esc(r.context.topic)}). It isn't harmful, so it ${r.verdict === 'clean' ? 'still posts' : "isn't blocked for that"}; off-topic comments are often spam or meant for another post.</div>`
+    : r.context && r.relevance === 'on_topic' ? '<p class="muted" style="margin:6px 0 0">✓ On-topic for this post.</p>' : '';
   $('result').innerHTML = `<div style="margin-top:16px"><span class="verdict v-${esc(r.verdict)}">${esc(TITLES[r.verdict] || r.verdict)}</span> ${r.label ? `<span class="pill bad">${esc(r.label)}</span>` : ''}
-    <p>${esc(r.reason)}</p>${posted}${rewrite}${score}${ctx}
+    <p>${esc(r.reason)}</p>${posted}${relevance}${rewrite}${score}${ctx}
     ${r.verdict === 'unsure' && r.id ? '<p class="note info" id="wait">A moderator can approve or keep this back on <a href="/admin" target="_blank">/admin</a> → Review queue. This page updates when they decide.</p>' : ''}
     ${r.verdict === 'severe' ? '<p class="muted">Sent to moderators for the record. Edit it to say what you mean without the harm.</p>' : ''}</div>`;
   if (r.suggestion) $('use').onclick = () => { $('comment').value = r.suggestion; $('form').requestSubmit(); };
