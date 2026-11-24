@@ -1,18 +1,21 @@
 # ARGUS browser extension
 
-One Chrome extension with two checks. Both send their work to your ARGUS server; the extension holds no AI keys.
+One Chrome extension with three checks. All send their work to your ARGUS server; the extension holds no AI keys.
 
 - **Your comments** (`moderator.js`, from the team's AI Moderator): on YouTube, Reddit and Instagram (and WhatsApp Web if you switch it on), pressing Post first checks the comment.
   - Clean comments post.
   - Rude ones are held, with the reason and a better way to say it (**Use this** / **Edit**).
   - Harmful ones are explained and not posted.
-  - Comments the AI can't read confidently wait for a moderator.
+  - Comments the AI can't read confidently wait for a moderator (on the server's `/admin` page).
+  - Each comment is judged in the context of the post it replies to (its topic, summary and sensitivity, summarised once per post and reused). The card says which context was used.
   - If ARGUS can't be reached, nothing posts (it fails closed).
 - **Images in your feed** (`lens.js`, from Argus Lens): hover over an image on Instagram, Reddit or YouTube and click **Check**, or right-click any image and choose **Check with Argus Lens**.
   - The verdict sits on the image: labelled as AI-made, likely AI, no signs found, or can't tell.
   - The evidence is outlined on the image, and private details are blurred on your screen.
   - Videos: **Check frame** checks the paused frame.
   - The toolbar panel's **Check a photo or video file** opens the ARGUS Lens page (`/lens`).
+  - Registered work (`phash.js`): if the image matches work a creator registered on `/register`, the card shows the creator, Content ID and reuse terms. Only the image's fingerprint is sent, not the image.
+- **Who posted it** (`identity.js`): on a YouTube video or channel, a Reddit post, or an Instagram post or profile, a badge by the author's name shows an ARGUS credential (verified person, official organisation account, or authorised AI agent and what it may do). A warning appears when an account uses a verified name without being that account. Accounts without a credential get no badge.
 
 ## Install (Chrome, Edge, Brave)
 

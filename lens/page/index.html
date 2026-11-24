@@ -12,6 +12,9 @@
   @media (prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0d0f17;--surface:#151826;--text:#eef0f7;--muted:#a1a7bb;--line:#272b3d;
     --ai:#c4b5fd;--ai-bg:#2a1f4d;--ok:#6ee7b7;--ok-bg:#0f2e25;--unk:#cbd5e1;--unk-bg:#1e2433;--warn:#fcd34d;--warn-bg:#33270e;--harm:#fca5a5;--harm-bg:#3a1517;--mark:#a78bfa;--mark-fill:rgba(167,139,250,.3)}}
   *{box-sizing:border-box}
+  nav.pages{display:flex;gap:6px;flex-wrap:wrap;margin:10px 0 18px}
+  nav.pages a{font:600 14px Inter,sans-serif;padding:7px 14px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);text-decoration:none}
+  nav.pages [aria-current="page"]{background:var(--ai);border-color:var(--ai);color:var(--surface)}
   body{margin:0;background:var(--bg);color:var(--text);font:15px/1.55 Inter,'Segoe UI',system-ui,sans-serif}
   main{max-width:1100px;margin:0 auto;padding:36px 16px 60px}
   header{display:flex;align-items:center;gap:12px;margin-bottom:6px}
@@ -82,6 +85,7 @@
     <svg viewBox="0 0 64 64" fill="none" aria-hidden="true"><path d="M4 32C12 18 22 12 32 12s20 6 28 20c-8 14-18 20-28 20S12 46 4 32Z" stroke="currentColor" stroke-width="4" stroke-linejoin="round"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>
     <h1>Argus Lens</h1>
   </header>
+  <nav class="pages"><a href="/lens" aria-current="page">Lens</a><a href="/register">Provenance</a><a href="/admin">Admin</a></nav>
   <nav class="modes" role="tablist" aria-label="What to check">
     <button type="button" role="tab" id="mode-real" data-mode="real">Is this real?<small>Check a photo or video you've seen</small></button>
     <button type="button" role="tab" id="mode-post" data-mode="post">Check before posting<small>Check your own photo or video</small></button>

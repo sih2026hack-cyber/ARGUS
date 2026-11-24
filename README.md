@@ -1,11 +1,72 @@
-# ARGUS
+# ARGUS: Cross-Platform Digital Trust & Responsible AI Plugin
 
-ARGUS is a browser extension that helps people think before they post and check before they share. It runs on YouTube, Reddit and Instagram (and WhatsApp Web for messages), and talks to a small ARGUS server that holds the model keys.
+ARGUS is a Chrome extension and a small server that help people answer five questions while they browse YouTube, Reddit and Instagram:
 
-- **Comment moderator** (`ai-moderator-plugin/`): checks a comment before it posts. It suggests a better way to say a rude one, explains why a harmful one can't be posted, and sends unclear ones to a moderator. It uses NVIDIA Nemotron while Nebius credits last, then MiniMax. Private messages are checked but never stored.
-- **Argus Lens** (`lens/`, page at `/lens`): checks a photo or video for signs of AI generation and for harmful or private details, with the evidence outlined. It uses Meta's Muse Wonder and SAM 3.1, and answers "Couldn't check" when the Meta credits are used up.
-- **Browser extension** (`extension/`): both checks inside the sites above. See [extension/README.md](extension/README.md).
-- **Abusive-word masking** (`lib/profanity.mjs`): masks abusive words in English, Hindi (romanised) and Tamil (romanised and Tamil script), for example `k****`. To add words, edit `STEMS` (also matches inflected forms) or `EXACT` (whole words only), then run `npm test`.
+1. Is this content potentially harmful?
+2. Is it original, authentic or modified?
+3. Who created it, and has it been properly attributed?
+4. Is this account or AI agent authorised to represent who it claims to?
+5. Can we understand and trust the AI's decision?
+
+It doesn't replace each platform's own tools. It connects safety, provenance, authenticity and identity checks in one place, and shows evidence and confidence rather than accusations.
+
+## The five engines: what is built
+
+| Engine | Built in this repo | Where |
+|---|---|---|
+| **01 · Content Safety** | Checks a comment **before it is posted** and gives one of five verdicts: clean, rude (with a checked politer rewrite), severe (with an explanation, never posted), unsure (goes to a person), or unavailable (fails closed). Understands Tamil, Hindi and other languages typed in English letters. **Context Memory & Reuse Engine**: each post is summarised once (topic, summary, sensitivity), stored by platform, post ID and content version, and reused for every later comment. The verdict is judged in that context. Abusive words are masked in English, Hindi and Tamil in everything shown. | `ai-moderator-plugin/`, `lib/post-context.mjs`, `lib/profanity.mjs`, `extension/moderator.js` |
+| **02 · Provenance & Ownership** | Creators register an image and get a unique **Content ID** and a **signed record** of their claim, reuse permission (5 licences), source and parent work (for edits and remixes: **content lineage**). Images are matched by a **perceptual fingerprint**, so resized, recompressed and lightly cropped copies are still recognised. Lens shows the registered work an image matches while you browse. | `lib/provenance-registry.mjs`, `extension/phash.js`, `/register` |
+| **03 · Authenticity & AI Media** | **Argus Lens** checks images and video frames for signs of AI generation, harmful content and private details (number plates, house numbers), and outlines the evidence. It reads AI labels and Content-Credential (C2PA/IPTC) markers in the file. It reports **confidence**, and says "Can't tell" rather than guessing. | `lens/`, `extension/lens.js`, `/lens` |
+| **04 · Identity & Accountability** | Admins issue credentials following the **W3C Verifiable Credentials** data model, signed with the server's Ed25519 key, to **people, organisations and AI agents**. An agent's credential names the organisation that runs it and what it may do. The extension shows a badge next to the post's author, and **warns when an account uses the name of a verified account without being it** (possible impersonation). Credentials expire and can be revoked. Content registrations are signed and linked to the creator's verified account (**signed publishing records**). | `lib/identity.mjs`, `lib/signing.mjs`, `extension/identity.js`, `/admin` |
+| **05 · Responsible AI & Efficiency** | Every verdict comes with a plain **explanation** and a label. Lens gives confidence and evidence. **Human review**: unsure comments wait, unposted, for a person on `/admin`. **Privacy**: private messages are never stored or sent to reviewers; emails, phone and ID numbers are hidden before text reaches a model; keys stay on the server; only image fingerprints, not images, are sent for matching. **Efficiency**: post summaries are reused instead of re-made; Nemotron is used while its credit lasts, then MiniMax; Lens stops at its credit limit; every route is rate limited. | across the above |
+
+### Not built yet (future work)
+
+- **Bias monitoring** across languages and dialects (the moderator's prompts have Tamil and Hindi calibration, but there is no ongoing measurement).
+- **Model routing by difficulty**: today models switch on credit, not on how hard the comment is.
+- **C2PA signature verification**: Lens reads Content-Credential markers but does not verify their signatures.
+- **Identity**: credentials are issued by this ARGUS server after a manual check. There are no decentralised identifiers (DIDs), no wallet for holders to keep their own credentials, and no issuers other than ARGUS.
+- **Provenance**: images only (no video or text fingerprints); heavy crops (around 15% or more) are not matched; no reverse search of the wider web.
+- More browsers (Firefox, Safari) and platforms (X, LinkedIn).
+
+### Honest boundaries (also shown in the UI)
+
+Similar fingerprints are not proof of theft or ownership. A detector's prediction is not proof that something is AI-made. A verified account is not proof of who is typing at the moment. Provenance does not prove that content is true. ARGUS shows evidence and confidence, and leaves the judgement to people.
+
+## How it fits together
+
+```mermaid
+flowchart LR
+  subgraph Browser["Chrome extension"]
+    M["moderator.js<br/>comment box"]
+    L["lens.js<br/>images & video"]
+    I["identity.js<br/>author badge"]
+    P["phash.js<br/>fingerprint"]
+  end
+  subgraph Server["ARGUS server (server.mjs)"]
+    CM["Context Memory<br/>post-context.mjs"]
+    MOD["Moderator<br/>ai-moderator-plugin"]
+    LENS["Argus Lens"]
+    REG["Content registry"]
+    ID["Identity credentials"]
+    SIG["Ed25519 signer"]
+    Q["Human review queue"]
+  end
+  M -- "comment + post ID/text" --> CM --> MOD
+  MOD -- unsure --> Q
+  L --> LENS
+  L --> P -- "fingerprint" --> REG
+  I --> ID
+  REG --> SIG
+  ID --> SIG
+  MOD & CM --> LLM[("Nemotron → MiniMax")]
+  LENS --> META[("Meta Muse + SAM 3.1")]
+  CM & REG & ID --> DB[("Local files / Supabase")]
+```
+
+**Context-aware moderation, step by step:** you write a comment under a YouTube video → the extension sends it with the video's ID, title and description → the server looks up the post's stored context (topic, summary, sensitivity). Only if this post, or this version of it, is new does the model summarise it, once → the scorer judges the comment *in that context* → the verdict, reason, any suggested rewrite and the context used come back to the comment box.
+
+Example: "That's sick!" under a basketball trick shot is read as praise and passes. The same words under a news video about a fatal crash read as cheering the crash and are stopped. Context can clear up slang; it never excuses a direct insult, threat or slur.
 
 ## Run it
 
@@ -13,39 +74,64 @@ Requires Node.js 22+.
 
 ```powershell
 npm install
-copy .env.example .env   # then fill in the keys
+copy .env.example .env   # add MINIMAX_API_KEY (and NEBIUS_API_KEY, MODEL_API_KEY if you have them)
 npm start
 ```
 
-The server listens on http://localhost:8787. Then load the extension:
+The server prints its address (http://localhost:8787) and, when `ARGUS_ADMIN_SECRET` is not set, an **admin key** for `/admin` for this run. Supabase is optional; without it, everything is saved in `data/runtime/`.
 
-1. Open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the `extension/` folder.
-2. Click the ARGUS icon. The panel should say **Connected to http://localhost:8787**.
+Load the extension: open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the `extension/` folder. The toolbar panel should say **Connected to http://localhost:8787**.
 
 ```powershell
 npm test
 ```
 
-The tests run against fake model APIs on localhost, so no credits are spent.
+Seven test suites run against fake model APIs on localhost, so no credits are spent.
+
+## Demo script
+
+1. **Context-aware moderation.** Open a YouTube video and type a rude comment, then post it. ARGUS stops it, explains why, offers a politer version, and shows which post context it judged with. Try "That's sick!" under a sports clip.
+2. **Human review.** Post something ambiguous in Tanglish. It waits, and appears on `/admin` → *Review queue*. Approve it, and the comment box posts it.
+3. **AI media.** Right-click an image → *Check with Argus Lens*. You'll see the AI verdict, evidence outlines, and private details blurred.
+4. **Provenance.** On `/register`, register a photo. Upload a resized or recompressed copy: it's recognised, with the creator, Content ID and licence. Lens shows the same on any site using that image.
+5. **Identity.** On `/admin` → *Identity credentials*, issue an organisation credential to a YouTube channel. Open one of its videos: a **✓ ARGUS verified** badge appears by the channel name. A different channel using the same name gets **⚠ Not the verified account**. Issue an AI-agent credential to show *"AI agent operated by …, allowed to reply to comments"*.
 
 ## Layout
 
 | Path | What it is |
 |---|---|
-| `server.mjs` | The server: extension routes, Lens page, moderator plugin routes, `/api/health` |
-| `lib/extension-api.mjs` | Extension routes: `/api/ext/check`, `/peek`, `/suggest`, `/status`; `/api/lens/assess`, `/assess-video`. Rate limited per client |
-| `lib/moderation.mjs` | Picks Nemotron or MiniMax for the moderator and tracks Nebius spend |
-| `lib/lens.mjs` | Connects Lens to the Meta API and tracks Meta spend |
-| `lib/profanity.mjs` | Abusive-word masking |
-| `lib/config.mjs`, `lib/providers.mjs`, `lib/storage.mjs` | Settings, the MiniMax client, local state (optionally mirrored to Supabase) |
-| `ai-moderator-plugin/` | The moderator as a reusable package, with a drop-in comment box widget and demo |
+| `server.mjs` | The server: all routes, pages, `/api/health` |
+| `ai-moderator-plugin/` | The comment moderator as a reusable package, with a drop-in comment box widget |
+| `lib/post-context.mjs` | Context Memory & Reuse Engine |
+| `lib/extension-api.mjs` | The extension's moderator and Lens routes (rate limited) |
+| `lib/provenance-registry.mjs` | Content IDs, fingerprint matching, licences, lineage |
+| `lib/identity.mjs` | Credentials for people, organisations and AI agents; impersonation check |
+| `lib/signing.mjs` | Ed25519 signing of records and credentials (public key at `/api/identity/issuer`) |
+| `lib/trust-api.mjs` | Provenance, identity and admin routes |
+| `lib/moderation.mjs`, `lib/lens.mjs` | Model choice and credit tracking (Nebius → MiniMax; Meta) |
+| `lib/profanity.mjs` | Abusive-word masking (English, Hindi, Tamil) |
 | `lens/` | Lens engine (`src/`) and page (`page/`) |
-| `extension/` | The Chrome (Manifest V3) extension, with test pages in `extension/test/` |
+| `pages/` | `/register` (creators) and `/admin` (review queue, credentials, registry) |
+| `extension/` | The Chrome (Manifest V3) extension |
+| `supabase/argus-state.sql` | Optional tables when hosting without a disk |
+| `tests/` | End-to-end and unit tests |
+
+## API
+
+| Route | Purpose |
+|---|---|
+| `POST /api/ext/check` `{text, site, post:{id,title,text}}` | Check a comment in its post's context |
+| `POST /api/lens/assess` (image bytes) | AI, harm and privacy check of an image |
+| `POST /api/provenance/register`, `/match`; `GET /api/provenance/item?id=` | Register work, find matches, follow lineage |
+| `GET /api/identity/lookup?platform=&handle=&name=` | Credentials and impersonation warning for an account |
+| `POST /api/identity/verify` `{credential}`; `GET /api/identity/issuer` | Check any credential; get the signing key |
+| `GET /api/plugin/queue`, `POST /api/plugin/resolve`, `/api/admin/*` | Human review and credential admin (admin key) |
+| `GET /api/health` | Models in use, credit left, Context Memory reuse counts |
 
 ## Deploy on Render (free plan)
 
-`Dockerfile` and `render.yaml` are included: New > Blueprint > pick this repo. Set `ARGUS_PASSWORD` and `ARGUS_EXTENSION_KEY`, and put the same extension key and the Render address in the extension's settings. The free plan has no disk, so to keep credit spend and moderator decisions across restarts, set the Supabase variables and run `supabase/argus-state.sql` once.
+`Dockerfile` and `render.yaml` are included: New > Blueprint > pick this repo. Set `ARGUS_PASSWORD`, `ARGUS_ADMIN_SECRET` and `ARGUS_EXTENSION_KEY`, and put the same extension key and the Render address in the extension's settings. The free plan has no disk: to keep state across restarts (credit spend, post contexts, the registry, credentials and the signing key), set the Supabase variables and run `supabase/argus-state.sql` once.
 
-## Privacy
+## Privacy and security
 
-Keys stay on the server. Never commit `.env` or `data/runtime/`; both are in `.gitignore`.
+Keys stay on the server, and the extension can reach only its own routes. Admin routes need the admin key. Never commit `.env` or `data/runtime/` (which holds the signing key); both are in `.gitignore`.
