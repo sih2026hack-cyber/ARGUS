@@ -34,7 +34,9 @@
     // box by proximity: the nearest area holding both a text box and a Post/Send button.
     // DMs: the /direct/ pages, and the pop-up chat on any page (its box is labelled "Message").
     instagram: { composer: 'form:has(textarea), form:has([contenteditable="true"])', enterSends: true, byProximity: true, privatePaths: /^\/direct\//, privateBox: /^message/i },
-    whatsapp: { composer: 'footer:has([contenteditable="true"])', enterSends: true, private: true },
+    // WhatsApp redraws its layout now and then: if the footer isn't there, the box is found by
+    // proximity, or as a box on its own (Enter sends; the Send arrow only appears once you type).
+    whatsapp: { composer: 'footer:has([contenteditable="true"])', enterSends: true, private: true, byProximity: true, anyBox: true },
     // These are found by proximity (the nearest area with a text box and a send-type button),
     // because their markup changes often. anyBox: the box has no button (Enter is the only way
     // to send), so the box's own container is used.
@@ -133,6 +135,8 @@
 
   function composerIn(path) {
     const known = asElements(path).find((el) => el.matches(COMPOSER));
+    // On sites found by proximity, a plain form holding a text box counts as the site's own too.
+    if (known && CONF.byProximity && editorIn(known)) foundByProximity.add(known);
     if (known || !CONF.byProximity) return known || null;
     const near = composerNear(path) || (CONF.generic && chatBox(path) ? chatContainer(path) : null);
     if (near) foundByProximity.add(near);
@@ -584,7 +588,7 @@
   const LIVE_MIN_CHARS = 4;
   const LIVE_PER_MINUTE = 6;
   const BADGE_TEXT = {
-    idle: 'Argus checks your comment when you pause typing',
+    idle: 'Argus checks what you write when you pause typing',
     checking: 'Checking…',
     clean: 'Looks good',
     rude: 'Could come across as rude — click for a better way to say it',

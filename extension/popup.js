@@ -71,3 +71,6 @@ chrome.tabs.query({ active: true, currentWindow: true }).then(async ([tab]) => {
 
 $('settings').onclick = () => { chrome.runtime.openOptionsPage(); window.close(); };
 $('auto').onchange = () => chrome.storage.sync.set({ auto: $('auto').checked });
+// Private messages: on unless switched off. Takes effect at once in open tabs.
+chrome.storage.sync.get('messages').then(({ messages }) => { $('messages').checked = messages !== false; });
+$('messages').onchange = () => chrome.storage.sync.set({ messages: $('messages').checked, whatsapp: $('messages').checked });
