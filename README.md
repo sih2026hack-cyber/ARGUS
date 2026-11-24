@@ -10,6 +10,10 @@ ARGUS is a Chrome extension and a small server that help people answer five ques
 
 It doesn't replace each platform's own tools. It connects safety, provenance, authenticity and identity checks in one place, and shows evidence and confidence rather than accusations.
 
+## One extension for all of it
+
+The toolbar popup is the hub: **Check a comment**, **Check a photo or video**, **Register my work**, **Review & credentials**, and **Verify an account** right in the popup. While you browse, comments are checked when you post, images can be checked or registered from the right-click menu, selected text can be checked with the moderator, and authors get identity badges.
+
 ## The five engines: what is built
 
 | Engine | Built in this repo | Where |
@@ -80,6 +84,8 @@ npm start
 
 The server prints its address (http://localhost:8787) and, when `ARGUS_ADMIN_SECRET` is not set, an **admin key** for `/admin` for this run. Supabase is optional; without it, everything is saved in `data/runtime/`.
 
+Try the moderator without any social site at **http://localhost:8787/moderator**: pick a sample post, write a comment, and see the verdict, reason, rewrite, harm score and the post context it was judged with.
+
 Load the extension: open `chrome://extensions`, turn on **Developer mode**, click **Load unpacked** and pick the `extension/` folder. The toolbar panel should say **Connected to http://localhost:8787**.
 
 ```powershell
@@ -90,7 +96,7 @@ Seven test suites run against fake model APIs on localhost, so no credits are sp
 
 ## Demo script
 
-1. **Context-aware moderation.** Open a YouTube video and type a rude comment, then post it. ARGUS stops it, explains why, offers a politer version, and shows which post context it judged with. Try "That's sick!" under a sports clip.
+1. **Context-aware moderation.** On `/moderator`, write "That's sick!" under the trick-shot post (it posts), then under the bus-crash post (it's stopped, with a reason and a kinder rewrite). Then do it for real: open a YouTube video and type a rude comment, then post it. ARGUS stops it, explains why, offers a politer version, and shows which post context it judged with. Try "That's sick!" under a sports clip.
 2. **Human review.** Post something ambiguous in Tanglish. It waits, and appears on `/admin` → *Review queue*. Approve it, and the comment box posts it.
 3. **AI media.** Right-click an image → *Check with Argus Lens*. You'll see the AI verdict, evidence outlines, and private details blurred.
 4. **Provenance.** On `/register`, register a photo. Upload a resized or recompressed copy: it's recognised, with the creator, Content ID and licence. Lens shows the same on any site using that image.
@@ -111,7 +117,7 @@ Seven test suites run against fake model APIs on localhost, so no credits are sp
 | `lib/moderation.mjs`, `lib/lens.mjs` | Model choice and credit tracking (Nebius → MiniMax; Meta) |
 | `lib/profanity.mjs` | Abusive-word masking (English, Hindi, Tamil) |
 | `lens/` | Lens engine (`src/`) and page (`page/`) |
-| `pages/` | `/register` (creators) and `/admin` (review queue, credentials, registry) |
+| `pages/` | `/moderator` (try the comment check), `/register` (creators) and `/admin` (review queue, credentials, registry) |
 | `extension/` | The Chrome (Manifest V3) extension |
 | `supabase/argus-state.sql` | Optional tables when hosting without a disk |
 | `tests/` | End-to-end and unit tests |

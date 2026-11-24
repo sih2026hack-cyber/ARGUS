@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARGUS Moderator</title>
+<link rel="stylesheet" href="/pages.css">
+<style>
+  .posts{display:grid;gap:8px}
+  .post{display:block;width:100%;text-align:left;font:inherit;color:inherit;background:var(--bg);border:1px solid var(--line);border-radius:12px;padding:10px 12px;cursor:pointer}
+  .post[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+  .post b{display:block}
+  .post span{color:var(--muted);font-size:13px}
+  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+  .chips button{font:13px var(--font);padding:5px 10px;border-radius:999px;border:1px solid var(--line);background:var(--surface);color:var(--text);cursor:pointer}
+  textarea.comment{min-height:84px;font:15px var(--font)}
+  .verdict{display:inline-block;font-weight:700;font-size:16px;padding:6px 13px;border-radius:999px}
+  .v-clean{background:var(--ok-bg);color:var(--ok)} .v-rude,.v-unsure{background:var(--warn-bg);color:var(--warn)} .v-severe,.v-unavailable{background:var(--harm-bg);color:var(--harm)}
+  .meter{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:6px 0 2px}
+  .meter i{display:block;height:100%;background:linear-gradient(90deg,var(--ok),var(--warn) 45%,var(--harm) 85%)}
+  .rewrite{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--ok-bg);color:var(--ok)}
+  .stats{display:flex;gap:18px;flex-wrap:wrap;font-size:13px;color:var(--muted)}
+  .stats b{color:var(--text);font-size:18px;display:block}
+  #custom[hidden]{display:none}
+</style>
+</head>
+<body>
+<main>
+  <header>
+    <svg viewBox="0 0 64 64" fill="none"><path d="M4 32C12 18 22 12 32 12s20 6 28 20c-8 14-18 20-28 20S12 46 4 32Z" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>
+    <h1>ARGUS Moderator</h1>
+  </header>
+  <p class="tag">Write a comment under a post and see how ARGUS judges it in that post's context, before it would be published.</p>
+  <nav><a href="/moderator" aria-current="page">Moderator</a><a href="/lens">Lens</a><a href="/register">Provenance</a><a href="/admin">Admin</a></nav>
+
+  <div class="grid">
+    <section class="card">
+      <h2>1 · The post you're replying to</h2>
+      <div class="posts" id="posts"></div>
+      <div id="custom" hidden>
+        <label for="ctitle">Post title</label><input id="ctitle" maxlength="300">
+        <label for="ctext">Post text or description</label><textarea id="ctext" maxlength="1500" style="font:14px var(--font);min-height:70px"></textarea>
+      </div>
+      <h2 style="margin-top:20px">Context Memory</h2>
+      <div class="stats" id="stats"></div>
+      <p class="muted">Each post is summarised once and the summary is reused for every later comment on it, instead of being made again.</p>
+    </section>
+
+    <section class="card">
+      <h2>2 · Your comment</h2>
+      <form id="form">
+        <textarea class="comment" id="comment" maxlength="2000" required placeholder="Write a comment…" aria-label="Comment"></textarea>
+        <div class="chips" id="chips" aria-label="Try an example"></div>
+        <button class="primary" id="go">Check and post</button>
+      </form>
+      <div id="result" aria-live="polite"></div>
+    </section>
+  </div>
+</main>
+<script src="/moderator.js"></script>
+</body>
+</html>

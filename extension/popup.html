@@ -3,28 +3,68 @@
 <head>
 <meta charset="utf-8">
 <style>
-  body{margin:0;width:290px;padding:16px;font:14px/1.45 'Segoe UI',system-ui,sans-serif;color:#14161c;background:#fff}
+  :root{--font:'Segoe UI',system-ui,sans-serif;--text:#14161c;--muted:#5d6272;--line:#e3e6ee;--bg:#f5f6fa;--accent:#6d28d9;--ok:#047857;--ok-bg:#ecfdf5;--warn:#b45309;--warn-bg:#fffbeb;--bad:#b42318;--bad-bg:#fef2f2;--surface:#fff}
+  @media (prefers-color-scheme:dark){:root{--text:#eef0f7;--muted:#a1a7bb;--line:#272b3d;--bg:#0d0f17;--accent:#c4b5fd;--ok:#6ee7b7;--ok-bg:#0f2e25;--warn:#fcd34d;--warn-bg:#33270e;--bad:#fca5a5;--bad-bg:#3a1517;--surface:#151826}}
+  *{box-sizing:border-box}
+  body{margin:0;width:340px;padding:14px 14px 12px;font:13.5px/1.45 'Segoe UI',system-ui,sans-serif;color:var(--text);background:var(--surface)}
+  .top{display:flex;align-items:center;justify-content:space-between;gap:8px}
   .brand{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px}
-  .brand svg{width:22px;height:22px;color:#2b4acb}
-  p{margin:8px 0 12px;color:#5d6272}
-  h2{font-size:13px;margin:14px 0 4px;color:#14161c}
-  button{display:block;width:100%;padding:10px 12px;border-radius:10px;border:0;background:#2b4acb;color:#fff;font:600 14px inherit;cursor:pointer}
-  button.secondary{margin-top:8px;background:#fff;color:#14161c;border:1px solid #e3e6ee}
-  .auto{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:13px}
-  #server{font-size:12px;color:#5d6272;margin-top:12px;word-break:break-all}
-  #server.bad{color:#b42318}
+  .brand svg{width:22px;height:22px;color:var(--accent)}
+  #status{font-size:11.5px;font-weight:600;padding:2px 8px;border-radius:999px;background:var(--bg);color:var(--muted);max-width:170px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #status.ok{background:var(--ok-bg);color:var(--ok)} #status.bad{background:var(--bad-bg);color:var(--bad)}
+  .sub{color:var(--muted);margin:6px 0 10px;font-size:12.5px}
+  .tiles{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+  .tile{display:flex;flex-direction:column;gap:2px;text-align:left;padding:10px;border-radius:12px;border:1px solid var(--line);background:var(--bg);color:var(--text);font:inherit;cursor:pointer}
+  .tile:hover{border-color:var(--accent)}
+  .tile b{font-size:13.5px}
+  .tile span{color:var(--muted);font-size:11.5px;line-height:1.35}
+  .tile i{font-style:normal;font-size:18px}
+  h2{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted);margin:14px 0 6px}
+  form{display:flex;gap:6px}
+  select,input[type=text]{font:inherit;padding:7px 8px;border-radius:8px;border:1px solid var(--line);background:var(--bg);color:var(--text);min-width:0}
+  input[type=text]{flex:1}
+  button.go{font:600 13px var(--font);padding:7px 11px;border-radius:8px;border:0;background:var(--accent);color:var(--surface);cursor:pointer}
+  #who{margin-top:8px;font-size:12.5px}
+  #who .note{padding:8px 10px;border-radius:10px}
+  .note.ok{background:var(--ok-bg);color:var(--ok)} .note.warn{background:var(--warn-bg);color:var(--warn)} .note.none{background:var(--bg);color:var(--muted)}
+  .on{color:var(--muted);font-size:12px;margin:0;padding-left:16px}
+  .on li{margin:2px 0}
+  .auto{display:flex;align-items:center;gap:8px;margin-top:10px;font-size:12.5px}
+  .foot{display:flex;justify-content:space-between;align-items:center;margin-top:10px}
+  .link{background:none;border:0;padding:0;color:var(--accent);font:600 12.5px var(--font);cursor:pointer}
 </style>
 </head>
 <body>
-  <div class="brand"><svg viewBox="0 0 64 64" fill="none"><path d="M4 32C12 18 22 12 32 12s20 6 28 20c-8 14-18 20-28 20S12 46 4 32Z" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>ARGUS</div>
-  <h2>Your comments</h2>
-  <p>On YouTube, Reddit and Instagram, comments are checked when you press Post. Rude ones get a better way to say it; harmful ones are explained.</p>
-  <h2>Images in your feed</h2>
-  <p>Hover over an image and click <b>Check</b>, or right-click any image.</p>
-  <button id="file" type="button">Check a photo or video file</button>
+  <div class="top">
+    <div class="brand"><svg viewBox="0 0 64 64" fill="none"><path d="M4 32C12 18 22 12 32 12s20 6 28 20c-8 14-18 20-28 20S12 46 4 32Z" stroke="currentColor" stroke-width="5"/><circle cx="32" cy="32" r="10" fill="currentColor"/></svg>ARGUS</div>
+    <span id="status" role="status">Connecting…</span>
+  </div>
+  <p class="sub">Digital trust for what you post and what you see.</p>
+
+  <div class="tiles">
+    <button class="tile" data-open="/moderator"><i>💬</i><b>Check a comment</b><span>Safety in the post's context, with a better way to say it</span></button>
+    <button class="tile" data-open="/lens"><i>🔍</i><b>Check a photo or video</b><span>Signs of AI, harm and private details</span></button>
+    <button class="tile" data-open="/register"><i>©</i><b>Register my work</b><span>Content ID, reuse terms, copy detection</span></button>
+    <button class="tile" data-open="/admin"><i>🛡</i><b>Review &amp; credentials</b><span>Human review, verified accounts and agents</span></button>
+  </div>
+
+  <h2>Verify an account</h2>
+  <form id="lookup">
+    <select id="platform" aria-label="Platform"><option>youtube</option><option>instagram</option><option>reddit</option><option>x</option><option>linkedin</option><option>web</option></select>
+    <input type="text" id="handle" placeholder="@channel or username" aria-label="Handle" required>
+    <button class="go">Check</button>
+  </form>
+  <div id="who" aria-live="polite"></div>
+
+  <h2>Working while you browse</h2>
+  <ul class="on">
+    <li>Comments on YouTube, Reddit and Instagram are checked when you press Post.</li>
+    <li>Hover an image and click <b>Check</b>, or right-click it to check it or register it as your work.</li>
+    <li>Authors with an ARGUS credential get a badge; look-alikes get a warning.</li>
+    <li>Right-click selected text to check it with the moderator.</li>
+  </ul>
   <label class="auto"><input id="auto" type="checkbox"> Check feed images automatically (uses API credits)</label>
-  <button id="settings" class="secondary" type="button">Settings</button>
-  <div id="server" role="status"></div>
+  <div class="foot"><button class="link" id="settings" type="button">Settings</button><button class="link" id="health" type="button">Server status</button></div>
 <script src="popup.js"></script>
 </body>
 </html>

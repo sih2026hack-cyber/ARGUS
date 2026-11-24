@@ -5,6 +5,7 @@
 //   /api/plugin/*  the moderator plugin's own routes (ai-moderator-plugin/)
 //   /lens          the Lens page; /plugin/moderator-widget.* the drop-in comment box widget
 //   /api/provenance/*, /api/identity/*, /api/admin/*  Provenance & Ownership, Identity (lib/trust-api.mjs)
+//   /moderator     try the comment moderator on sample posts (Context Memory, human review)
 //   /register      creators register their work; /admin the reviewer queue, credentials and registry
 //   /api/health    which models are in use and how much credit is left
 import http from 'node:http';
@@ -64,10 +65,11 @@ const assets=new Map([
   ['/phash.js',['extension/phash.js','text/javascript']],
   ['/register',['pages/register.html','text/html']],['/register.js',['pages/register.js','text/javascript']],
   ['/admin',['pages/admin.html','text/html']],['/admin.js',['pages/admin.js','text/javascript']],
+  ['/moderator',['pages/moderator.html','text/html']],['/moderator.js',['pages/moderator.js','text/javascript']],
   ['/pages.css',['pages/pages.css','text/css']],
 ]);
 // The Lens page shows the user's own files (blob: URLs) and uses the Inter web font.
-const CSP="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self' blob: data:; img-src 'self' data: blob:; media-src 'self' blob: data:; frame-ancestors 'none'";
+const CSP="default-src 'self'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; script-src 'self'; connect-src 'self' blob: data:; img-src 'self' data: blob: https:; media-src 'self' blob: data:; frame-ancestors 'none'";
 
 http.createServer(async(req,res)=>{
   try{

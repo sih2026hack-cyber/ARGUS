@@ -84,7 +84,7 @@ try {
   await new Promise((resolve, reject) => { const t = setTimeout(() => reject(new Error('Test server did not start')), 10000); child.once('exit', c => reject(new Error('Test server exited ' + c))); child.stdout.once('data', () => { clearTimeout(t); resolve(); }); });
 
   // Pages and the shared fingerprint script.
-  for (const page of ['/register', '/register.js', '/admin', '/admin.js', '/pages.css', '/phash.js']) assert.equal((await fetch(base + page)).status, 200, page);
+  for (const page of ['/register', '/register.js', '/admin', '/admin.js', '/moderator', '/moderator.js', '/pages.css', '/phash.js']) assert.equal((await fetch(base + page)).status, 200, page);
 
   // Admin routes need the key.
   assert.equal((await json('/api/admin/credentials')).status, 401);

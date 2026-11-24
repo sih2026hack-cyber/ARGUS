@@ -146,11 +146,30 @@ chrome.runtime.onMessage.addListener((msg, sender, reply) => {
   }
 });
 
-// Right-click any image, on any site.
+// Right-click menu, on any site:
+//   an image → Check with Argus Lens, or Register it as my work (opens /register with its fingerprint)
+//   selected text → Check it with the ARGUS moderator (opens /moderator with the text)
+// The fingerprint and text travel in the address's #fragment, which browsers never send to a server.
 chrome.runtime.onInstalled.addListener(() => {
-  chrome.contextMenus.create({ id: 'argus-lens', title: 'Check with Argus Lens', contexts: ['image'] });
+  chrome.contextMenus.removeAll(() => {
+    chrome.contextMenus.create({ id: 'argus-lens', title: 'Check with Argus Lens', contexts: ['image'] });
+    chrome.contextMenus.create({ id: 'argus-register', title: 'Register this image as my work (ARGUS)', contexts: ['image'] });
+    chrome.contextMenus.create({ id: 'argus-text', title: 'Check "%s" with the ARGUS moderator', contexts: ['selection'] });
+  });
 });
+async function openPage(path, fragment) {
+  const { server } = await settings();
+  chrome.tabs.create({ url: `${server}${path}#${new URLSearchParams(fragment)}` });
+}
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+  if (info.menuItemId === 'argus-text') return openPage('/moderator', { text: String(info.selectionText || '').slice(0, 2000) });
+  if (info.menuItemId === 'argus-register') {
+    try {
+      const blob = await imageBytes(info.srcUrl);
+      const { phash, sha256, width, height } = await self.argusFingerprint(blob);
+      return openPage('/register', { phash, sha256, size: `${width}x${height}`, src: /^https?:/.test(info.srcUrl) ? info.srcUrl : '', page: tab?.url || '' });
+    } catch (err) { return openPage('/register', { error: err.message || "Couldn't read that image." }); }
+  }
   if (info.menuItemId !== 'argus-lens' || !tab?.id) return;
   try { await chrome.tabs.sendMessage(tab.id, { type: 'check', url: info.srcUrl }); }
   catch {

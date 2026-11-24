@@ -55,6 +55,29 @@ $('form').onsubmit = async e => {
   $('go').disabled = false;
 };
 
+// Opened from the extension's right-click "Register this image as my work": the fingerprint was
+// made in the extension and arrives in the #fragment (never sent to the server in the address).
+async function fromExtension() {
+  const h = new URLSearchParams(location.hash.slice(1));
+  if (h.get('error')) { $('matches').innerHTML = `<div class="note bad">${esc(h.get('error'))}</div>`; return; }
+  if (!/^[0-9a-f]{16}$/.test(h.get('phash') || '')) return;
+  fp = { phash: h.get('phash'), sha256: /^[0-9a-f]{64}$/.test(h.get('sha256') || '') ? h.get('sha256') : undefined };
+  const src = h.get('src');
+  if (src && /^https:\/\//.test(src)) { $('preview').src = src; $('preview').hidden = false; $('dropText').hidden = true; }
+  else $('dropText').innerHTML = '<b>Image from the extension</b><br>Fingerprinted in your browser.';
+  if (/^https?:\/\//.test(h.get('page') || '')) $('source').value = h.get('page');
+  $('fp').innerHTML = `Fingerprint <span class="mono">${fp.phash}</span>${h.get('size') ? ` · ${esc(h.get('size'))}` : ''} · from the ARGUS extension`;
+  try {
+    const found = await api('/api/provenance/match', { phash: fp.phash, sha256: fp.sha256 });
+    $('matches').innerHTML = found.matches.length
+      ? `<div class="note warn"><b>Registered work looks like this.</b> ${esc(found.note)}</div><div class="list" style="margin-top:10px">${found.matches.map(m => recordHtml(m, `<div class="muted">${esc(m.relation_text)} ${m.similarity}% similar.</div>`)).join('')}</div>`
+      : '<div class="note ok">No registered work looks like this image.</div>';
+  } catch (e) { $('matches').innerHTML = `<div class="note bad">${esc(e.message)}</div>`; }
+  $('go').disabled = false;
+  history.replaceState(null, '', location.pathname);
+}
+fromExtension();
+
 $('lookup').onsubmit = async e => {
   e.preventDefault();
   try {
