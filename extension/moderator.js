@@ -484,7 +484,7 @@
     }
     if (!r || r.error || r.verdict === 'unavailable') {
       const why = whyUnreachable(r && (r.error || r.reason));
-      r = { allowed: false, verdict: 'unavailable', reason: /posted/i.test(why) ? why : `${why} It hasn't been posted.` };
+      r = { allowed: false, verdict: 'unavailable', reason: /posted|sent/i.test(why) ? why : `${why} It hasn't been ${isPrivate(editor) ? 'sent' : 'posted'}.` };
     }
     // The writer changed the text while we were checking: start over on their next click.
     if (textOf(editor) !== text) return hide();

@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ARGUS: digital trust for what you post and see",
-  "version": "0.6.2",
+  "version": "0.6.3",
   "description": "Checks what you write in any text box, on any site, before it is sent: in the context of the post, with a better way to say it. Checks images for AI, harm, private details and registered work, and shows who is verified behind a post. Talks to your ARGUS server.",
   "permissions": [
     "storage",
