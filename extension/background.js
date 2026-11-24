@@ -26,10 +26,10 @@ const postJson = (path, body) => call(path, { method: 'POST', headers: { 'Conten
 // ---- Comment moderator ----
 async function moderate(msg) {
   try {
-    if (msg.type === 'check') return await postJson('/api/ext/check', { text: msg.text, site: msg.site, replyingTo: msg.replyingTo });
+    if (msg.type === 'check') return await postJson('/api/ext/check', { text: msg.text, site: msg.site, replyingTo: msg.replyingTo, post: msg.post });
     if (msg.type === 'status') return await call(`/api/ext/status?id=${encodeURIComponent(msg.id)}`);
-    if (msg.type === 'peek') return await postJson('/api/ext/peek', { text: msg.text });
-    if (msg.type === 'suggest') return await postJson('/api/ext/suggest', { text: msg.text, replyingTo: msg.replyingTo });
+    if (msg.type === 'peek') return await postJson('/api/ext/peek', { text: msg.text, site: msg.site, post: msg.post });
+    if (msg.type === 'suggest') return await postJson('/api/ext/suggest', { text: msg.text, replyingTo: msg.replyingTo, site: msg.site, post: msg.post });
   } catch (err) {
     // Fail closed: if we can't check, the comment is not allowed.
     return msg.type === 'check'

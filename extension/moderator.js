@@ -157,6 +157,30 @@
     return (t || '').slice(0, 300);
   }
 
+  // Context Memory: which post the comment replies to (its ID) and what it says (title + text).
+  // The server summarises each post once and reuses that for every later comment on it.
+  // Never sent for private messages.
+  function postInfo(editor) {
+    if (isPrivate(editor)) return undefined;
+    const pick = (sel) => (document.querySelector(sel)?.innerText || document.querySelector(sel)?.textContent || '').trim();
+    const path = location.pathname;
+    let id = '', title = '', text = '';
+    if (SITE === 'youtube') {
+      id = new URLSearchParams(location.search).get('v') || (path.match(/\/shorts\/([\w-]+)/) || [])[1] || '';
+      title = replyingTo(editor) || '';
+      text = pick('#description-inline-expander') || pick('#description') || '';
+    } else if (SITE === 'reddit') {
+      id = (path.match(/\/comments\/(\w+)/) || [])[1] || '';
+      title = replyingTo(editor) || '';
+      text = pick('shreddit-post [slot="text-body"]') || pick('[data-test-id="post-content"]') || '';
+    } else if (SITE === 'instagram') {
+      id = (path.match(/\/(?:p|reel|reels)\/([\w-]+)/) || [])[1] || '';
+      text = pick('article h1') || pick('h1') || '';
+    }
+    if (!id || (!title && !text)) return undefined;
+    return { id, title: title.slice(0, 300), text: text.slice(0, 1500) };
+  }
+
   // Puts the text in the box. Resolves true only once the box really shows it.
   async function setText(editor, value) {
     const done = () => normalize(textOf(editor)) === normalize(value);
@@ -379,13 +403,18 @@
     }
   }
 
+  // Shows which post context the verdict was judged with (transparency).
+  const contextLine = (r) => r && r.context
+    ? `<div class="muted">Judged with this post's context: ${esc(r.context.topic)} (${esc(r.context.sensitivity)} sensitivity)${r.context.reused ? ', reused from memory' : ''}.</div>`
+    : '';
+
   async function check(composer, button, editor, text) {
     if (busy.has(composer)) return;
     busy.add(composer);
     show('', '<div class="title">Checking your comment…</div>');
     let r;
     try {
-      r = await chrome.runtime.sendMessage({ type: 'check', text, site: siteForServer(editor), replyingTo: replyingTo(editor) });
+      r = await chrome.runtime.sendMessage({ type: 'check', text, site: siteForServer(editor), replyingTo: replyingTo(editor), post: postInfo(editor) });
     } catch (e) {
       r = { error: whyUnreachable(e) };
     } finally {
@@ -407,7 +436,7 @@
         : `<div class="reason">${isPrivate(editor) ? 'Try saying what upset you, without attacking the person.' : 'Try saying how you feel about the video or post, not the person.'}</div>`;
       return show(
         'warn',
-        `${pill(r.label)}<div class="title">Not posted yet</div><div class="reason">${esc(r.reason)}</div>${argus}${pattern}
+        `${pill(r.label)}<div class="title">Not posted yet</div><div class="reason">${esc(r.reason)}</div>${contextLine(r)}${argus}${pattern}
          <div class="buttons">${r.suggestion ? '<button class="primary" data-act="use">Use this</button>' : ''}<button data-act="edit">Edit</button></div>`,
         {
           use: async () => {
@@ -423,7 +452,7 @@
     if (r.verdict === 'severe') {
       return show(
         'danger',
-        `${pill(r.label)}<div class="title">This can't be posted</div><div class="reason">${esc(r.reason)}</div>${pattern}
+        `${pill(r.label)}<div class="title">This can't be posted</div><div class="reason">${esc(r.reason)}</div>${contextLine(r)}${pattern}
          <div class="buttons"><button class="primary" data-act="edit">Edit my ${isPrivate(editor) ? 'message' : 'comment'}</button>${isPrivate(editor) ? '' : '<span class="muted">A moderator can see this.</span>'}</div>`,
         { edit: () => editIt(editor) }
       );
@@ -609,7 +638,7 @@
     setBadge('checking');
     let r;
     try {
-      r = await chrome.runtime.sendMessage({ type: 'peek', text });
+      r = await chrome.runtime.sendMessage({ type: 'peek', text, site: SITE, post: postInfo() });
     } catch (e) {
       r = { error: whyUnreachable(e) };
     } finally {
@@ -671,7 +700,7 @@
     });
     let s;
     try {
-      s = await chrome.runtime.sendMessage({ type: 'suggest', text, replyingTo: replyingTo() });
+      s = await chrome.runtime.sendMessage({ type: 'suggest', text, replyingTo: replyingTo(), site: SITE, post: postInfo() });
     } catch {
       s = null;
     }

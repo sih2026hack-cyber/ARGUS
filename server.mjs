@@ -13,7 +13,7 @@ import {ROOT,settings,server,env} from './lib/config.mjs';
 import {readLocal,saveLocal,upsert,restoreState} from './lib/storage.mjs';
 const restored=await restoreState(); // must run before any module reads runtime state
 if(restored)console.log(`Restored ${restored} state files from Supabase`);
-const {moderator,moderatorModel}=await import('./lib/moderation.mjs');
+const {moderator,moderatorModel,postContext}=await import('./lib/moderation.mjs');
 const {lens,lensStatus}=await import('./lib/lens.mjs');
 const {createExtensionApi}=await import('./lib/extension-api.mjs');
 const {createModeratorService,moderatorHandler}=await import('./ai-moderator-plugin/src/index.mjs');
@@ -22,7 +22,7 @@ const {createModeratorService,moderatorHandler}=await import('./ai-moderator-plu
 const plugin=createModeratorService({moderator,decisions:readLocal('moderation',[]),persist:async(item,decisions)=>{let storage;try{await upsert('moderation_logs',[{id:item.id,created_at:item.created_at,payload:item}],'id');storage='Supabase + local';}catch{storage='Local only - cloud sync needed';}saveLocal('moderation',decisions.slice(0,300));return storage;}});
 // Plugin routes under /api/plugin: preview, check, accept, ask, status, decisions (+ queue and resolve when ARGUS_MODERATOR_SECRET is set).
 const pluginRoutes=moderatorHandler(plugin,{base:'/api/plugin',moderatorSecret:env.ARGUS_MODERATOR_SECRET||null});
-const extensionApi=createExtensionApi({plugin,moderator,lens});
+const extensionApi=createExtensionApi({plugin,moderator,lens,postContext});
 
 // Local: only localhost. Public (Render): its hostname, behind HTTP Basic Auth.
 const localHosts=[`localhost:${settings.port}`,`127.0.0.1:${settings.port}`];
@@ -61,7 +61,7 @@ http.createServer(async(req,res)=>{
     if(req.headers.origin&&!(extRoute&&fromExtension)&&!allowedOrigin(req.headers.origin,req.headers.host))return json(res,{error:'Cross-origin requests are not allowed'},403);
     if(!authorized(req)&&!(extRoute&&extKeyOk)){res.writeHead(401,{'WWW-Authenticate':'Basic realm="ARGUS", charset="UTF-8"','Content-Type':'text/plain; charset=utf-8'});res.end(server.password?'Sign in to ARGUS.':'Set ARGUS_PASSWORD in the Render environment to use this deployment.');return;}
     const url=new URL(req.url,`http://127.0.0.1:${settings.port}`);
-    if(url.pathname==='/api/health'&&req.method==='GET')return json(res,{ok:true,minimax_configured:!!settings.miniKey,moderator_model:moderatorModel(),lens:lensStatus()});
+    if(url.pathname==='/api/health'&&req.method==='GET')return json(res,{ok:true,minimax_configured:!!settings.miniKey,moderator_model:moderatorModel(),post_context:postContext.stats(),lens:lensStatus()});
     if(url.pathname.startsWith('/api/plugin/'))return await pluginRoutes(req,res);
     if(await extensionApi(req,res,url))return;
     const sample=url.pathname.match(/^\/lens\/samples\/([a-z-]+\.(webp|mp4))$/);

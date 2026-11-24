@@ -59,9 +59,10 @@ export function createModeratorService({ moderator = createModerator(), decision
   return {
     decisions,
     preview: text => moderator.inspectDraft(draft(text)),
-    async check(text, replyingTo) {
+    // options.postContext: { topic, summary, sensitivity } of the post (see moderate()).
+    async check(text, replyingTo, { postContext } = {}) {
       const original = draft(text);
-      const result = await moderator.moderate(original, { replyingTo: typeof replyingTo === 'string' ? replyingTo : undefined });
+      const result = await moderator.moderate(original, { replyingTo: typeof replyingTo === 'string' ? replyingTo : undefined, postContext });
       const item = { ...result, id: crypto.randomUUID(), original_text: original, created_at: new Date().toISOString(), accepted: false, review: null };
       // Unsure comments wait for a person; severe ones go to moderators automatically and stay unposted.
       if (result.verdict === 'unsure') openReview(item, 'waiting');
@@ -151,7 +152,7 @@ export function moderatorHandler(service = createModeratorService(), { base = '/
       if (action === 'status') return send(res, await service.status(input.id));
       if (action !== 'check' && action !== 'accept' && action !== 'ask') return pass();
       if (limited(req)) throw new ModeratorError('Too many checks — wait a minute and try again.', 429);
-      if (action === 'check') return send(res, await service.check(input.text, input.replyingTo));
+      if (action === 'check') return send(res, await service.check(input.text, input.replyingTo, { postContext: input.postContext }));
       if (action === 'ask') return send(res, await service.ask(input.id));
       return send(res, await service.accept(input.id));
     } catch (error) {

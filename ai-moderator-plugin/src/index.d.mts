@@ -14,7 +14,11 @@ export type ModerationResult = {
   label?: string | null;
   /** A checked, safe rewrite for rude comments; null otherwise. */
   suggestion: string | null;
+  /** The post context the verdict was judged with (Context Memory), or null. */
+  context?: PostContext | null;
 };
+
+export type PostContext = { topic: string; summary: string; sensitivity: "low" | "medium" | "high" };
 
 export type ChatMessage = { role: "system" | "user"; content: string };
 export type ModelCall = (messages: ChatMessage[], maxTokens: number) => Promise<string>;
@@ -31,7 +35,7 @@ export type ModeratorOptions = {
 };
 
 export type Moderator = {
-  moderate(text: string, options?: { replyingTo?: string; suggest?: boolean }): Promise<ModerationResult>;
+  moderate(text: string, options?: { replyingTo?: string; postContext?: PostContext | null; suggest?: boolean }): Promise<ModerationResult>;
   score(text: string): Promise<{ score: number; category: string; reason: string; meaning: string; unsure: boolean }>;
   inspectDraft(text: string): { hint: "threat" | "check" | null; message: string | null };
 };
@@ -85,7 +89,7 @@ export type QueueItem = {
 export type ModeratorService = {
   decisions: Decision[];
   preview(text: string): { hint: "threat" | "check" | null; message: string | null };
-  check(text: string, replyingTo?: string): Promise<Decision>;
+  check(text: string, replyingTo?: string, options?: { postContext?: PostContext | null }): Promise<Decision>;
   accept(id: string): Promise<{ text: string; allowed: true; storage: string }>;
   /** [Ask a moderator]: the comment waits, unposted, for a person. */
   ask(id: string): Promise<ReviewState>;
