@@ -49,15 +49,24 @@
         }
         try {
           const blob = await (await fetch(msg.url)).blob();
+          // As background.js does: the Lens check and the registered-work check side by side.
+          const provenance = (async () => {
+            try {
+              const { phash, sha256 } = await self.argusFingerprint(blob);
+              const r = await fetch('/api/provenance/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phash, sha256 }) });
+              return r.ok ? await r.json() : null;
+            } catch { return null; }
+          })();
           const res = await fetch('/api/lens/assess', { method: 'POST', body: blob });
           const data = await res.json();
-          return res.ok ? { result: data } : { error: data.error };
+          return res.ok ? { result: { ...data, provenance: await provenance } } : { error: data.error };
         } catch (e) { return { error: e.message }; }
       },
       onMessage: { addListener() {} },
     } };
   }
 </script>
+<script src="/phash.js"></script>
 <script src="/ext/content.js"></script>
 </body>
 </html>

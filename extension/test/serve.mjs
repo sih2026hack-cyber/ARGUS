@@ -19,6 +19,7 @@ const FILES = {
   '/content.js': ['../moderator.js', 'text/javascript'],
   '/test': ['feed.html', 'text/html'],
   '/ext/content.js': ['../lens.js', 'text/javascript'],
+  '/phash.js': ['../phash.js', 'text/javascript'], // the image fingerprint, for registered-work matches
 };
 const API = (process.env.ARGUS_API || 'http://localhost:8787').replace(/\/$/, '');
 const port = Number(process.env.PORT || 8792);
