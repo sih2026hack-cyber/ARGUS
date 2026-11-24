@@ -52,8 +52,8 @@
           // As background.js does: the Lens check and the registered-work check side by side.
           const provenance = (async () => {
             try {
-              const { phash, sha256 } = await self.argusFingerprint(blob);
-              const r = await fetch('/api/provenance/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phash, sha256 }) });
+              const { phash, mirror, sha256 } = await self.argusFingerprint(blob);
+              const r = await fetch('/api/provenance/match', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ phash, mirror, sha256 }) });
               return r.ok ? await r.json() : null;
             } catch { return null; }
           })();

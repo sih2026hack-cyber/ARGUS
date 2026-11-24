@@ -66,6 +66,22 @@ const remix = registry.register({ phash: '1234123412341234', title: 'Marina suns
 const tree = registry.lineage(original.content_id);
 assert.equal(tree.derivatives[0].content_id, remix.content_id);
 assert.equal(registry.lineage(remix.content_id).made_from[0].content_id, original.content_id);
+// Crops and mirror images: a registration keeps crop fingerprints (outside the signature), and
+// a check sends its mirror-image fingerprint.
+const cropRec = registry.register({ phash: '00ff00ff00ff00ff', crops: ['123456789abcdef0', 'nonsense', '0fedcba987654321'], title: 'Beach', creator: 'Lin', license: 'cc-by' });
+assert.equal(cropRec.signature, 'valid', 'crop fingerprints do not affect the signature');
+assert.equal(cropRec.record.crops, undefined, 'crop fingerprints are not part of the signed record');
+assert.equal(registry.match({ phash: '123456789abcdef3' }).matches[0].relation, 'cropped');
+assert.equal(registry.match({ phash: 'ffffffffffffffff', mirror: '00ff00ff00ff00fe' }).matches[0].relation, 'mirrored');
+assert.equal(registry.match({ phash: 'ffffffffffffffff', mirror: '0fedcba987654320' }).matches[0].relation, 'mirrored_crop');
+assert.equal(registry.match({ phash: '123456789abc0001' }).matches.length, 0, 'crops need a closer match (within 10 bits) than whole images');
+// An older registration without crop fingerprints gets them when it is registered again.
+const old = registry.register({ phash: 'aaaaaaaaaaaaaaaa', title: 'Old', creator: 'Ravi', license: 'cc-by' });
+assert.equal(registry.match({ phash: 'bbbbbbbbbbbbbbbb' }).matches.length, 0);
+const again = registry.register({ phash: 'aaaaaaaaaaaaaaaa', crops: ['bbbbbbbbbbbbbbbb'], title: 'Old', creator: 'Ravi', license: 'cc-by' });
+assert.equal(again.duplicate, true); assert.equal(again.crop_prints_added, true);
+assert.equal(registry.match({ phash: 'bbbbbbbbbbbbbbbb' }).matches[0].content_id, old.content_id);
+assert.equal(registry.lineage(old.content_id).item.signature, 'valid', 'adding crop fingerprints keeps the signature valid');
 const locked = registry.register({ phash: '9999999999999999', title: 'Locked', creator: 'Mei', license: 'no-derivatives' });
 assert.throws(() => registry.register({ phash: '8888888888888888', title: 'Edit', creator: 'X', license: 'cc-by', parent_id: locked.content_id }), /no edits/);
 

@@ -24,7 +24,7 @@ async function choose(file) {
   try {
     fp = await self.argusFingerprint(file);
     $('fp').innerHTML = `Fingerprint <span class="mono">${fp.phash}</span> · ${fp.width}×${fp.height}`;
-    const found = await api('/api/provenance/match', { phash: fp.phash, sha256: fp.sha256 });
+    const found = await api('/api/provenance/match', { phash: fp.phash, mirror: fp.mirror, sha256: fp.sha256 });
     $('matches').innerHTML = found.matches.length
       ? `<div class="note warn"><b>Registered work looks like this.</b> ${esc(found.note)}</div><div class="list" style="margin-top:10px">${found.matches.map(m => recordHtml(m, `<div class="muted">${esc(m.relation_text)} ${m.similarity}% similar.</div>`)).join('')}</div>`
       : '<div class="note ok">No registered work looks like this image.</div>';
@@ -45,11 +45,11 @@ $('form').onsubmit = async e => {
   $('go').disabled = true;
   try {
     const r = await api('/api/provenance/register', {
-      phash: fp.phash, sha256: fp.sha256, title: $('title').value, creator: $('creator').value,
+      phash: fp.phash, sha256: fp.sha256, crops: fp.crops, title: $('title').value, creator: $('creator').value,
       creator_account: $('account').value.trim() || undefined, license: $('license').value,
       source_url: $('source').value.trim() || undefined, parent_id: $('parent').value.trim() || undefined,
     });
-    $('result').innerHTML = `<div class="note ok"><b>${r.duplicate ? 'You already registered this image.' : 'Registered.'}</b> Your Content ID is <span class="mono">${esc(r.content_id)}</span>.</div><div style="margin-top:10px">${recordHtml(r)}</div>
+    $('result').innerHTML = `<div class="note ok"><b>${r.duplicate ? 'You already registered this image.' : 'Registered.'}</b>${r.crop_prints_added ? ' Cropped and mirrored copies of it are now recognised too.' : ''} Your Content ID is <span class="mono">${esc(r.content_id)}</span>.</div><div style="margin-top:10px">${recordHtml(r)}</div>
       ${r.record ? `<details style="margin-top:10px"><summary class="muted">Signed record (JSON)</summary><pre class="mono">${esc(JSON.stringify(r.record, null, 2))}</pre></details>` : ''}`;
   } catch (err) { $('result').innerHTML = `<div class="note bad">${esc(err.message)}</div>`; }
   $('go').disabled = false;
@@ -61,14 +61,14 @@ async function fromExtension() {
   const h = new URLSearchParams(location.hash.slice(1));
   if (h.get('error')) { $('matches').innerHTML = `<div class="note bad">${esc(h.get('error'))}</div>`; return; }
   if (!/^[0-9a-f]{16}$/.test(h.get('phash') || '')) return;
-  fp = { phash: h.get('phash'), sha256: /^[0-9a-f]{64}$/.test(h.get('sha256') || '') ? h.get('sha256') : undefined };
+  fp = { phash: h.get('phash'), mirror: h.get('mirror') || undefined, crops: (h.get('crops') || '').split(',').filter(Boolean), sha256: /^[0-9a-f]{64}$/.test(h.get('sha256') || '') ? h.get('sha256') : undefined };
   const src = h.get('src');
   if (src && /^https:\/\//.test(src)) { $('preview').src = src; $('preview').hidden = false; $('dropText').hidden = true; }
   else $('dropText').innerHTML = '<b>Image from the extension</b><br>Fingerprinted in your browser.';
   if (/^https?:\/\//.test(h.get('page') || '')) $('source').value = h.get('page');
   $('fp').innerHTML = `Fingerprint <span class="mono">${fp.phash}</span>${h.get('size') ? ` · ${esc(h.get('size'))}` : ''} · from the ARGUS extension`;
   try {
-    const found = await api('/api/provenance/match', { phash: fp.phash, sha256: fp.sha256 });
+    const found = await api('/api/provenance/match', { phash: fp.phash, mirror: fp.mirror, sha256: fp.sha256 });
     $('matches').innerHTML = found.matches.length
       ? `<div class="note warn"><b>Registered work looks like this.</b> ${esc(found.note)}</div><div class="list" style="margin-top:10px">${found.matches.map(m => recordHtml(m, `<div class="muted">${esc(m.relation_text)} ${m.similarity}% similar.</div>`)).join('')}</div>`
       : '<div class="note ok">No registered work looks like this image.</div>';

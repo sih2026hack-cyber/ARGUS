@@ -61,8 +61,8 @@ async function assess(url) {
 }
 async function provenanceOf(blob) {
   try {
-    const { phash, sha256 } = await self.argusFingerprint(blob);
-    const found = await postJson('/api/provenance/match', { phash, sha256 });
+    const { phash, mirror, sha256 } = await self.argusFingerprint(blob);
+    const found = await postJson('/api/provenance/match', { phash, mirror, sha256 });
     return found && !found.error ? found : null;
   } catch { return null; }
 }
@@ -166,8 +166,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
   if (info.menuItemId === 'argus-register') {
     try {
       const blob = await imageBytes(info.srcUrl);
-      const { phash, sha256, width, height } = await self.argusFingerprint(blob);
-      return openPage('/register', { phash, sha256, size: `${width}x${height}`, src: /^https?:/.test(info.srcUrl) ? info.srcUrl : '', page: tab?.url || '' });
+      const { phash, mirror, crops, sha256, width, height } = await self.argusFingerprint(blob);
+      return openPage('/register', { phash, mirror, crops: crops.join(','), sha256, size: `${width}x${height}`, src: /^https?:/.test(info.srcUrl) ? info.srcUrl : '', page: tab?.url || '' });
     } catch (err) { return openPage('/register', { error: err.message || "Couldn't read that image." }); }
   }
   if (info.menuItemId !== 'argus-lens' || !tab?.id) return;
