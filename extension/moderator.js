@@ -652,7 +652,7 @@
 
   function setBadge(state) {
     badge.dataset.state = state;
-    badge.textContent = state === 'clean' ? '✓' : state === 'rude' || state === 'severe' || state === 'unsure' ? '!' : 'R';
+    badge.textContent = state === 'clean' ? '✓' : state === 'rude' || state === 'severe' || state === 'unsure' ? '!' : 'A'; // A for ARGUS while idle or checking
     badge.title = state === 'unsure' && isPrivate() ? 'Not sure how this reads — try rephrasing it'
       : state === 'unavailable' && liveError ? `${liveError} It will be checked when you ${isPrivate() ? 'send' : 'post'} it.`
       : BADGE_TEXT[state] || BADGE_TEXT.idle;
