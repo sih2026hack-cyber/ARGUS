@@ -1,0 +1,34 @@
+# Render Blueprint: New > Blueprint > pick this repo. Secrets marked sync:false are asked for once.
+services:
+  - type: web
+    name: argus
+    runtime: docker
+    plan: free
+    region: singapore
+    healthCheckPath: /healthz
+    autoDeploy: true
+    envVars:
+      - key: ARGUS_USER
+        value: argus
+      - key: ARGUS_PASSWORD          # login for the Lens page (HTTP Basic Auth); required
+        sync: false
+      - key: ARGUS_EXTENSION_KEY     # lets the browser extension past the password
+        sync: false
+      - key: MINIMAX_API_KEY         # moderator fallback once Nemotron credits are used up
+        sync: false
+      - key: MINIMAX_MODEL
+        value: MiniMax-M3
+      - key: NEBIUS_API_KEY          # comment moderator: Nemotron while credits last, then MiniMax
+        sync: false
+      - key: NEBIUS_CREDIT_USD       # remaining Nebius credit in US$; Nemotron stops at this
+        sync: false
+      - key: MODEL_API_KEY           # Meta Model API for Argus Lens (images and videos)
+        sync: false
+      - key: META_CREDIT_USD         # remaining Meta credit in US$; Lens stops at this
+        sync: false
+      - key: SUPABASE_URL            # optional: keeps credit spend and decisions across restarts
+        sync: false
+      - key: SUPABASE_SERVICE_ROLE_KEY
+        sync: false
+      - key: ARGUS_STATE_SYNC
+        value: "true"

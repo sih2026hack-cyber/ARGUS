@@ -1,0 +1,17 @@
+{
+  "name": "argus",
+  "private": true,
+  "version": "0.1.0",
+  "description": "ARGUS browser extension and its server: checks comments before they post (AI moderator) and checks images and videos for AI generation and harmful or private details (Argus Lens).",
+  "type": "module",
+  "scripts": {
+    "start": "node server.mjs",
+    "test": "node ai-moderator-plugin/test/test.mjs && node lens/test/test.mjs && node tests/test_profanity.mjs && node tests/test_extension_api.mjs && node tests/test_moderator_credits.mjs"
+  },
+  "engines": {
+    "node": ">=22"
+  },
+  "dependencies": {
+    "@meta-sam/parser": "^0.1.0"
+  }
+}
