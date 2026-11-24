@@ -1,6 +1,8 @@
 # ARGUS browser extension
 
-One Chrome extension for all of ARGUS. The toolbar popup opens every part (comment check, Lens, register your work, review and credentials) and verifies an account in place. Right-click an image to check it or **register it as your work**, or right-click selected text to **check it with the moderator**. All checks send their work to your ARGUS server; the extension holds no AI keys.
+One Chrome extension for all of ARGUS. **It works in any text box on any site** (WhatsApp Web, Gmail, X, Facebook, Messenger, LinkedIn, Discord, Telegram, blogs and forums, as well as YouTube, Reddit and Instagram): a live badge as you type, and a check when you send. Password, email and search fields are never read; messages are never stored. To try it without signing in anywhere, run `node extension/test/serve.mjs` and open http://localhost:8792/anywhere (Gmail-, Discord-, X- and blog-style boxes, plus a login form and a search box it must leave alone).
+
+ The toolbar popup opens every part (comment check, Lens, register your work, review and credentials) and verifies an account in place. Right-click an image to check it or **register it as your work**, or right-click selected text to **check it with the moderator**. All checks send their work to your ARGUS server; the extension holds no AI keys.
 
 - **Your comments** (`moderator.js`, from the team's AI Moderator): on YouTube, Reddit and Instagram (and WhatsApp Web if you switch it on), pressing Post first checks the comment.
   - Clean comments post.

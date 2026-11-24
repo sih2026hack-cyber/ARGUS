@@ -3,6 +3,12 @@
 (() => {
   if (window.__argusLens) return;
   window.__argusLens = true;
+  // ARGUS's own pages have their own Lens; and the hover button stays away from sites the
+  // writer switched Argus off for (toolbar panel). Right-click checks still work there.
+  if (document.querySelector('meta[name="argus-page"]')) return;
+  let siteOff = false;
+  chrome.storage?.sync?.get('offSites').then(v => { siteOff = (v.offSites || []).includes(location.hostname); }).catch(() => {});
+  chrome.storage?.onChanged?.addListener(ch => { if (ch.offSites) siteOff = (ch.offSites.newValue || []).includes(location.hostname); });
 
   const MIN = 160; // images smaller than this on screen aren't worth checking (icons, avatars)
   const LABEL_STYLE = {
@@ -87,7 +93,7 @@
   }, { passive: true });
 
   function placeEye() {
-    if (!hovered || checked.get(hovered)?.pending) { eye.style.display = 'none'; return; }
+    if (siteOff || !hovered || checked.get(hovered)?.pending) { eye.style.display = 'none'; return; }
     const r = hovered.getBoundingClientRect();
     eye.style.display = 'inline-flex';
     eye.lastChild.textContent = hovered.tagName === 'VIDEO' ? 'Check frame' : 'Check';

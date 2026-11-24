@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Argus test bench: any site</title>
+<style>
+  body{font:15px/1.5 'Segoe UI',system-ui,sans-serif;max-width:720px;margin:24px auto;padding:0 16px;background:#fff;color:#14161c}
+  section{border:1px solid #d0d4de;border-radius:12px;padding:14px;margin:14px 0}
+  h2{font-size:15px;margin:0 0 8px}
+  textarea,[contenteditable],input{display:block;width:100%;box-sizing:border-box;min-height:44px;padding:8px;border:1px solid #c3c8d4;border-radius:8px;font:inherit;margin-bottom:8px;background:#fff;color:#14161c}
+  input{min-height:0}
+  button{font:inherit;padding:6px 14px;border-radius:8px;border:1px solid #c3c8d4;background:#f5f6fa;cursor:pointer}
+  #log{white-space:pre-wrap;background:#f5f6fa;border-radius:8px;padding:10px;min-height:40px}
+</style>
+</head>
+<body>
+  <h1>Any site: stand-in text boxes</h1>
+  <p>Gmail, Discord, X, a blog, and two forms Argus must leave alone. Everything "sent" is listed at the bottom.</p>
+
+  <section id="gmail"><h2>Gmail-style compose (rich text, "Send" button; Ctrl+Enter sends; Enter is a new line)</h2>
+    <div contenteditable="true" role="textbox" aria-label="Message Body"></div><div role="button" tabindex="0" aria-label="Send">Send</div></section>
+
+  <section id="discord"><h2>Discord-style chat (rich text, no button; Enter sends)</h2>
+    <form><div contenteditable="true" role="textbox" aria-label="Message #general"></div></form></section>
+
+  <section id="xpost"><h2>X-style reply (textarea, "Reply" button; Ctrl+Enter posts)</h2>
+    <div><textarea aria-label="Post text" placeholder="Post your reply"></textarea><div><button type="button">Reply</button></div></div></section>
+
+  <section id="blog"><h2>Blog comment form (textarea, "Post Comment" submit)</h2>
+    <form><textarea name="comment" placeholder="Leave a comment"></textarea><button type="submit">Post Comment</button></form></section>
+
+  <section id="login"><h2>Login form: Argus must not touch this</h2>
+    <form><input name="user" placeholder="Email"><input name="pw" type="password" placeholder="Password"><button type="submit">Send</button></form></section>
+
+  <section id="search"><h2>Search box: Argus must not touch this</h2>
+    <form><textarea aria-label="Search" placeholder="Search"></textarea><button type="submit">Send</button></form></section>
+
+  <h2>What the sites sent</h2>
+  <div id="log"></div>
+
+<script>
+  const log = (where, text) => { document.getElementById('log').textContent += `${where}: ${text}\n`; };
+  // Gmail: Send button or Ctrl+Enter.
+  const gm = document.querySelector('#gmail [contenteditable]');
+  const gmSend = () => { if (gm.innerText.trim()) { log('gmail', gm.innerText.trim()); gm.textContent = ''; } };
+  document.querySelector('#gmail [role=button]').addEventListener('click', gmSend);
+  gm.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); gmSend(); } });
+  // Discord: Enter sends, Shift+Enter is a new line.
+  const dc = document.querySelector('#discord [contenteditable]');
+  dc.addEventListener('keydown', e => { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); if (dc.innerText.trim()) { log('discord', dc.innerText.trim()); dc.textContent = ''; } } });
+  // X: Reply button.
+  const xt = document.querySelector('#xpost textarea');
+  document.querySelector('#xpost button').addEventListener('click', () => { if (xt.value.trim()) { log('x', xt.value.trim()); xt.value = ''; } });
+  // Forms: log instead of navigating.
+  for (const id of ['blog', 'login', 'search']) document.querySelector(`#${id} form`).addEventListener('submit', e => {
+    e.preventDefault(); const f = e.target; log(id, [...f.querySelectorAll('textarea,input')].map(x => x.type === 'password' ? '••••' : x.value).join(' / '));
+  });
+
+  // Stand-in for the extension's background worker and storage.
+  const params = new URLSearchParams(location.search);
+  window.__ARGUS_SITE = params.get('site') || 'web';
+  const store = { messages: params.get('messages') !== 'off', offSites: [] };
+  const post = (path, body) => fetch(path, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  window.__argusCalls = [];
+  window.chrome = {
+    storage: { sync: { get: async () => store }, onChanged: { addListener() {} },
+      local: { mem: {}, async get(k) { return { [k]: this.mem[k] }; }, async set(o) { Object.assign(this.mem, JSON.parse(JSON.stringify(o))); }, async remove(k) { delete this.mem[k]; } } },
+    runtime: { id: 'bench', sendMessage: async (msg) => {
+      window.__argusCalls.push({ type: msg.type, site: msg.site, text: msg.text });
+      try {
+        const res = msg.type === 'check' ? await post('/api/ext/check', { text: msg.text, site: msg.site, replyingTo: msg.replyingTo })
+          : msg.type === 'peek' ? await post('/api/ext/peek', { text: msg.text })
+          : msg.type === 'suggest' ? await post('/api/ext/suggest', { text: msg.text, replyingTo: msg.replyingTo })
+          : await fetch('/api/ext/status?id=' + encodeURIComponent(msg.id));
+        const data = await res.json();
+        if (!res.ok) return msg.type === 'check' ? { allowed: false, verdict: 'unavailable', reason: data.error } : { status: 'unknown' };
+        return data;
+      } catch (e) { return msg.type === 'check' ? { allowed: false, verdict: 'unavailable', reason: String(e) } : { status: 'unknown' }; }
+    } },
+  };
+</script>
+<script src="/content.js"></script>
+</body>
+</html>

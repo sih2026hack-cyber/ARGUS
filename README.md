@@ -12,6 +12,8 @@ It doesn't replace each platform's own tools. It connects safety, provenance, au
 
 ## One extension for all of it
 
+**ARGUS works in any text box on any site, like a spell-checker for harm**: WhatsApp Web, Gmail, X, Facebook, Messenger, LinkedIn, Discord, Telegram, YouTube, Reddit, Instagram, blogs and forums. A badge in the box shows how your text reads as you type; click it for the reason and a better way to say it. When you press Send, Post, Reply or Enter, the text is checked first. Password, email and search fields are never read. Messages and unknown sites are treated as private (checked, never stored, never shown to a moderator). On sites ARGUS doesn't know, you can still send if the check can't run. Switch it off for any site from the toolbar panel.
+
 The toolbar popup is the hub: **Check a comment**, **Check a photo or video**, **Register my work**, **Review & credentials**, and **Verify an account** right in the popup. While you browse, comments are checked when you post, images can be checked or registered from the right-click menu, selected text can be checked with the moderator, and authors get identity badges.
 
 ## The five engines: what is built
@@ -31,7 +33,7 @@ The toolbar popup is the hub: **Check a comment**, **Check a photo or video**, *
 - **C2PA signature verification**: Lens reads Content-Credential markers but does not verify their signatures.
 - **Identity**: credentials are issued by this ARGUS server after a manual check. There are no decentralised identifiers (DIDs), no wallet for holders to keep their own credentials, and no issuers other than ARGUS.
 - **Provenance**: images only (no video or text fingerprints); heavy crops (around 15% or more) are not matched; no reverse search of the wider web.
-- More browsers (Firefox, Safari) and platforms (X, LinkedIn).
+- More browsers (Firefox, Safari). Post context (Context Memory) and author badges cover YouTube, Reddit and Instagram; on other sites comments are judged without the post's context.
 
 ### Honest boundaries (also shown in the UI)
 

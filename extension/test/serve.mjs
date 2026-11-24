@@ -14,6 +14,7 @@ const SAMPLES = path.join(HERE, '..', '..', 'lens', 'page', 'samples');
 const FILES = {
   '/': ['fixtures.html', 'text/html'],
   '/social': ['social.html', 'text/html'],
+  '/anywhere': ['anywhere.html', 'text/html'], // Gmail, Discord, X, a blog, a login form, a search box
   '/direct/t/test': ['social.html', 'text/html'], // an Instagram-messages-like path
   '/content.js': ['../moderator.js', 'text/javascript'],
   '/test': ['feed.html', 'text/html'],

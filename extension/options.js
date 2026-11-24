@@ -3,7 +3,7 @@ const flash = (id, text) => { $(id).textContent = text; setTimeout(() => ($(id).
 chrome.storage.sync.get(['server', 'apiBase', 'apiKey', 'messages', 'whatsapp', 'auto', 'limit']).then(s => {
   $('server').value = s.server || s.apiBase || 'http://localhost:8787';
   $('apiKey').value = s.apiKey || '';
-  $('messages').checked = s.messages === true || s.whatsapp === true; // "whatsapp" = the older name
+  $('messages').checked = s.messages !== false; // on unless turned off
   $('auto').checked = s.auto === true;
   $('limit').value = s.limit || 10;
 });

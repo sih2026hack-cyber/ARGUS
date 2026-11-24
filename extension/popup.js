@@ -54,5 +54,20 @@ $('lookup').onsubmit = async e => {
   }
 };
 
+// Switch Argus off (or back on) for the site in the current tab. Takes effect at once.
+chrome.tabs.query({ active: true, currentWindow: true }).then(async ([tab]) => {
+  let host = '';
+  try { const u = new URL(tab?.url || ''); if (/^https?:$/.test(u.protocol)) host = u.hostname; } catch { /* not a web page */ }
+  if (!host) { $('here').disabled = true; $('host').textContent = 'web pages'; return; }
+  $('host').textContent = host.replace(/^www\./, '');
+  const { offSites = [] } = await chrome.storage.sync.get('offSites');
+  $('here').checked = !offSites.includes(host);
+  $('here').onchange = async () => {
+    const { offSites: now = [] } = await chrome.storage.sync.get('offSites');
+    const next = $('here').checked ? now.filter(h => h !== host) : [...new Set([...now, host])];
+    await chrome.storage.sync.set({ offSites: next });
+  };
+});
+
 $('settings').onclick = () => { chrome.runtime.openOptionsPage(); window.close(); };
 $('auto').onchange = () => chrome.storage.sync.set({ auto: $('auto').checked });

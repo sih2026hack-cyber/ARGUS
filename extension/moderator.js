@@ -1,6 +1,13 @@
-// Argus on YouTube, Reddit, Instagram and (opt-in) WhatsApp Web: catches the site's
-// Post/Comment/Reply/Send click (and the key that sends) before the site sees it,
-// checks the text, and only lets it through when it's allowed.
+// Argus in every text box you write in, like a spell-checker for harm: YouTube, Reddit,
+// Instagram, WhatsApp Web, X, Facebook, Messenger, LinkedIn, Discord, Telegram, Gmail, and
+// any other site. While you type, a badge in the box shows how it reads; click it for the
+// reason and a better way to say it. When you send, it catches the site's Post/Comment/
+// Reply/Send click (and the key that sends) before the site sees it, checks the text, and
+// only lets it through when it's allowed.
+//
+// Never in password, email, number or search fields (only real text areas and rich-text
+// boxes are watched). Messages and unknown sites are treated as private: checked, never
+// stored, never shown to a moderator. Switch Argus off for any site from its toolbar panel.
 //
 //   clean       → posts, as if nothing happened
 //   rude        → blocked; reason + a better way to say it ([Use this] posts that)
@@ -10,7 +17,10 @@
 (() => {
   if (window.__argusLoaded) return;
   window.__argusLoaded = true;
+  // ARGUS's own pages (/moderator and the rest) do their own checking.
+  if (document.querySelector('meta[name="argus-page"]')) return;
 
+  const GENERIC = 'form:has(textarea), form:has([contenteditable="true"])';
   // One block per site: the container that holds one comment box and its button, and
   // whether a plain Enter sends (otherwise only Ctrl/Cmd+Enter does).
   //   private:      the whole site is private messages (WhatsApp).
@@ -25,9 +35,28 @@
     // DMs: the /direct/ pages, and the pop-up chat on any page (its box is labelled "Message").
     instagram: { composer: 'form:has(textarea), form:has([contenteditable="true"])', enterSends: true, byProximity: true, privatePaths: /^\/direct\//, privateBox: /^message/i },
     whatsapp: { composer: 'footer:has([contenteditable="true"])', enterSends: true, private: true },
+    // These are found by proximity (the nearest area with a text box and a send-type button),
+    // because their markup changes often. anyBox: the box has no button (Enter is the only way
+    // to send), so the box's own container is used.
+    x: { composer: GENERIC, enterSends: false, byProximity: true, privatePaths: /^\/(?:messages|i\/chat)/ },
+    facebook: { composer: GENERIC, enterSends: true, byProximity: true, anyBox: true, privatePaths: /^\/messages/ },
+    messenger: { composer: GENERIC, enterSends: true, byProximity: true, anyBox: true, private: true },
+    linkedin: { composer: GENERIC, enterSends: false, byProximity: true, privatePaths: /^\/messaging/ },
+    discord: { composer: GENERIC, enterSends: true, byProximity: true, anyBox: true, private: true },
+    telegram: { composer: GENERIC, enterSends: true, byProximity: true, anyBox: true, private: true },
+    gmail: { composer: GENERIC, enterSends: false, byProximity: true, private: true },
+    // Every other site: a "Send"/"Post"/"Reply"/"Comment" button or Ctrl+Enter is checked; a
+    // plain Enter is left alone (on most sites it's a new line). If the check can't run, the
+    // writer may send anyway: Argus shouldn't lock someone out of a site it doesn't know.
+    web: { composer: GENERIC, enterSends: false, byProximity: true, private: true, generic: true },
   };
-  const detectSite = (h) =>
-    h.includes('youtube') ? 'youtube' : h.includes('reddit') ? 'reddit' : h.includes('instagram') ? 'instagram' : h.includes('whatsapp') ? 'whatsapp' : null;
+  const HOSTS = [
+    [/(^|\.)youtube\.com$/, 'youtube'], [/(^|\.)reddit\.com$/, 'reddit'], [/(^|\.)instagram\.com$/, 'instagram'],
+    [/^web\.whatsapp\.com$/, 'whatsapp'], [/(^|\.)(x|twitter)\.com$/, 'x'], [/(^|\.)messenger\.com$/, 'messenger'],
+    [/(^|\.)facebook\.com$/, 'facebook'], [/(^|\.)linkedin\.com$/, 'linkedin'], [/(^|\.)discord\.com$/, 'discord'],
+    [/^web\.telegram\.org$/, 'telegram'], [/^mail\.google\.com$/, 'gmail'],
+  ];
+  const detectSite = (h) => (HOSTS.find(([re]) => re.test(h)) || [null, /^https?:$/.test(location.protocol) ? 'web' : null])[1];
   const SITE = window.__ARGUS_SITE || detectSite(location.hostname);
   const CONF = SITES[SITE];
   if (!CONF) return;
@@ -36,22 +65,35 @@
   // Private messages: by the page (checked on each use — Instagram is a single-page app) or
   // by the box itself. Defaults to the box being watched.
   const boxName = (el) => (el.getAttribute('aria-label') || el.getAttribute('aria-placeholder') || el.getAttribute('placeholder') || '').trim();
+  // Off for this site? (the toolbar panel's switch). Search boxes are never checked.
+  let siteOff = false;
+  const SEARCH = '[role="searchbox"], [aria-label*="search" i], [placeholder*="search" i], [type="search"]';
   const isPrivate = (editor = live && live.editor) =>
     !!CONF.private || !!CONF.privatePaths?.test(location.pathname) || (!!CONF.privateBox && !!editor && CONF.privateBox.test(boxName(editor)));
   // The writer's switch for private messages ("messages"; older versions saved it as "whatsapp").
-  let messagesOn = false;
+  // On unless the writer turned it off: messages are checked but never stored.
+  let messagesOn = true;
   chrome.storage?.sync
-    ?.get(['messages', 'whatsapp'])
-    .then((v) => (messagesOn = v.messages === true || v.whatsapp === true))
+    ?.get(['messages', 'offSites'])
+    .then((v) => {
+      messagesOn = v.messages !== false;
+      siteOff = (v.offSites || []).includes(location.hostname);
+    })
     .catch(() => {});
   chrome.storage?.onChanged?.addListener((ch) => {
-    if (ch.messages) messagesOn = ch.messages.newValue === true;
+    if (ch.messages) messagesOn = ch.messages.newValue !== false;
+    if (ch.offSites) { siteOff = (ch.offSites.newValue || []).includes(location.hostname); if (siteOff) { setButtonBlocked(null, false); badge.hidden = true; live = null; } }
   });
-  const active = (editor) => !isPrivate(editor) || messagesOn;
-  // What the server is told this is: private pages are reported as such, so they're never stored.
-  const siteForServer = (editor) => (isPrivate(editor) && SITE === 'instagram' ? 'instagram_dm' : SITE);
-  // Buttons that publish. Matched on the visible label or aria-label.
-  const SUBMIT_LABEL = /^(comment|reply|save|post|send)$/i;
+  const active = (editor = live && live.editor) =>
+    !siteOff && !(editor && editor.matches && editor.matches(SEARCH)) && (!isPrivate(editor) || messagesOn);
+  // What the server is told this is. Private pages are reported as private, so they're never stored.
+  const siteForServer = (editor) =>
+    !isPrivate(editor) ? SITE : SITE === 'instagram' ? 'instagram_dm' : SITE === 'whatsapp' ? 'whatsapp' : 'private';
+  // Buttons that publish. Matched on the visible label or aria-label. ("Save" only on the
+  // sites that use it for comments; elsewhere it usually saves a draft or a setting.)
+  const SUBMIT_LABEL = CONF.generic || !['youtube', 'reddit'].includes(SITE)
+    ? /^(comment|reply|post|send|tweet|publish|(?:post|add|submit|send) (?:a )?(?:comment|reply|message)|post reply|send now)$/i
+    : /^(comment|reply|save|post|send)$/i;
   // If we can't read the text inside one of this site's boxes, we block rather than let
   // an unchecked comment through (fail closed).
   const SITE_COMPOSER = CONF.composer;
@@ -92,9 +134,15 @@
   function composerIn(path) {
     const known = asElements(path).find((el) => el.matches(COMPOSER));
     if (known || !CONF.byProximity) return known || null;
-    const near = composerNear(path);
+    const near = composerNear(path) || (CONF.generic && chatBox(path) ? chatContainer(path) : null);
     if (near) foundByProximity.add(near);
     return near;
+  }
+
+  // A chat box with no Send button on a site Argus doesn't know: its own container.
+  function chatContainer(path) {
+    const editor = asElements(path).find((el) => el.matches(EDITOR));
+    return editor ? editor.closest('form') || editor.parentElement : null;
   }
 
   // From the text box being typed in (or the Post button being clicked), walk outwards to
@@ -105,10 +153,12 @@
     );
     let el = start ? start.parentElement || start.getRootNode()?.host : null;
     for (let depth = 0; el && depth < 12; depth++) {
-      if (el === document.body) return null;
+      if (el === document.body) break;
       if (editorIn(el) && buttonIn(el)) return el;
       el = el.parentElement || el.getRootNode()?.host || null;
     }
+    // Chat boxes with no Send button (Enter sends): the box's own container.
+    if (CONF.anyBox && start && start.matches(EDITOR)) return start.closest('form') || start.parentElement;
     return null;
   }
 
@@ -323,7 +373,15 @@
   function postNow(composer, button, text) {
     cleared.set(composer, { text, until: Date.now() + 5000 });
     hide();
-    (button && button.isConnected ? button : buttonIn(composer))?.click();
+    const b = button && button.isConnected ? button : buttonIn(composer);
+    if (b) return b.click();
+    // No button (Discord, Telegram…): press Enter in the box, as the writer did.
+    const editor = editorIn(composer);
+    if (!editor) return;
+    editor.focus();
+    for (const type of ['keydown', 'keypress', 'keyup']) {
+      editor.dispatchEvent(new KeyboardEvent(type, { key: 'Enter', code: 'Enter', keyCode: 13, which: 13, bubbles: true, cancelable: true, composed: true }));
+    }
   }
 
   function editIt(editor) {
@@ -469,11 +527,13 @@
       );
     }
 
+    // On the sites Argus knows, nothing goes out unchecked. On any other site the writer may send
+    // anyway, so Argus never locks someone out of a site it doesn't know.
     return show(
       'warn',
       `<div class="title">Couldn't check right now</div><div class="reason">${esc(r.reason)}</div>
-       <div class="buttons"><button class="primary" data-act="retry">Try again</button><button class="close" data-act="close">Close</button></div>`,
-      { retry: () => check(composer, button, editor, textOf(editor)) }
+       <div class="buttons"><button class="primary" data-act="retry">Try again</button>${CONF.generic ? '<button data-act="anyway">Send anyway</button>' : ''}<button class="close" data-act="close">Close</button></div>`,
+      { retry: () => check(composer, button, editor, textOf(editor)), anyway: () => postNow(composer, button, text) }
     );
   }
 
@@ -707,7 +767,7 @@
     // The writer moved on (kept typing, closed the card): drop the late answer.
     if (textOf(editor) !== text || card.hidden || cardKey !== key) return;
     if (!s || !s.suggestion) {
-      return open('warn', `${head}<div class="reason">Try saying how you feel about the video or post, not the person.</div><div class="buttons"><button class="primary" data-act="edit">Edit it myself</button></div>`, {
+      return open('warn', `${head}<div class="reason">${isPrivate() ? 'Try saying what upset you, without attacking the person' : 'Try saying how you feel about the video or post, not the perso'}n.</div><div class="buttons"><button class="primary" data-act="edit">Edit it myself</button></div>`, {
         edit: () => editIt(editor),
       });
     }
@@ -745,7 +805,7 @@
       lines.push(`${el.tagName.toLowerCase()}${el.id ? '#' + el.id : ''}${a('slot') ? ' slot=' + a('slot') : ''}${el.matches(EDITOR) ? ' [editable]' : ''}${a('role') ? ' role=' + a('role') : ''}${a('aria-label') ? ` "${a('aria-label')}"` : ''}${el.shadowRoot ? ' (shadow)' : ''} buttons: ${buttons.join(' | ')}`);
       el = el.parentElement || el.getRootNode?.().host || null;
     }
-    console.info(`[Argus] didn't recognise this text box on ${SITE}. Its structure:\n${lines.join('\n')}`);
+    if (!CONF.generic) console.info(`[Argus] didn't recognise this text box on ${SITE}. Its structure:\n${lines.join('\n')}`);
   }
 
   window.addEventListener(
@@ -790,7 +850,18 @@
 
   // ---------- catching the submit ----------
 
+  // On a site Argus doesn't know, is this a chat box, where Enter sends? Its label says so
+  // ("Message #general", "Type a message", "Send a message", "Chat…"), and it's a rich-text box
+  // or a one-line text area. A blog's comment textarea keeps Enter as a new line.
+  const CHAT_LABEL = /^(?:(?:type|write|send|enter) (?:a |your )?message|message\b|chat\b|reply to\b|aa$)/i;
+  function chatBox(path) {
+    const editor = asElements(path).find((el) => el.matches(EDITOR));
+    if (!editor || !CHAT_LABEL.test(boxName(editor))) return false;
+    return !isField(editor) || Number(editor.getAttribute('rows') || 1) <= 1;
+  }
+
   function attempt(event, path, keyboard = false) {
+    if (siteOff) return;
     // The button we greyed out is always a submit, whatever it's called now.
     const onBlocked = !keyboard && blockedButton && path.includes(blockedButton);
     const button = keyboard ? null : onBlocked ? blockedButton : submitButtonIn(path);
@@ -840,9 +911,10 @@
     'keydown',
     (e) => {
       // Ctrl/Cmd+Enter everywhere; a plain Enter too on sites where Enter sends (Instagram,
-      // WhatsApp). Shift+Enter is a new line; Enter while composing (IME) is not a send.
+      // WhatsApp), and in chat-style boxes on any other site. Shift+Enter is a new line;
+      // Enter while composing (IME) is not a send.
       if (e.key !== 'Enter' || e.shiftKey || e.isComposing) return;
-      if (e.ctrlKey || e.metaKey || CONF.enterSends) attempt(e, e.composedPath(), true);
+      if (e.ctrlKey || e.metaKey || CONF.enterSends || (CONF.generic && chatBox(e.composedPath()))) attempt(e, e.composedPath(), true);
     },
     true
   );
