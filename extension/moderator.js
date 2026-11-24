@@ -436,7 +436,7 @@
         : `<div class="reason">${isPrivate(editor) ? 'Try saying what upset you, without attacking the person.' : 'Try saying how you feel about the video or post, not the person.'}</div>`;
       return show(
         'warn',
-        `${pill(r.label)}<div class="title">Not posted yet</div><div class="reason">${esc(r.reason)}</div>${contextLine(r)}${argus}${pattern}
+        `${pill(r.label)}<div class="title">${isPrivate(editor) ? 'Not sent yet' : 'Not posted yet'}</div><div class="reason">${esc(r.reason)}</div>${contextLine(r)}${argus}${pattern}
          <div class="buttons">${r.suggestion ? '<button class="primary" data-act="use">Use this</button>' : ''}<button data-act="edit">Edit</button></div>`,
         {
           use: async () => {
@@ -452,7 +452,7 @@
     if (r.verdict === 'severe') {
       return show(
         'danger',
-        `${pill(r.label)}<div class="title">This can't be posted</div><div class="reason">${esc(r.reason)}</div>${contextLine(r)}${pattern}
+        `${pill(r.label)}<div class="title">This can't be ${isPrivate(editor) ? 'sent' : 'posted'}</div><div class="reason">${esc(r.reason)}</div>${contextLine(r)}${pattern}
          <div class="buttons"><button class="primary" data-act="edit">Edit my ${isPrivate(editor) ? 'message' : 'comment'}</button>${isPrivate(editor) ? '' : '<span class="muted">A moderator can see this.</span>'}</div>`,
         { edit: () => editIt(editor) }
       );
