@@ -10,7 +10,9 @@
   if (window.__argusIdentity) return;
   window.__argusIdentity = true;
   const host = location.hostname;
-  const PLATFORM = /youtube\.com$/.test(host) ? 'youtube' : /reddit\.com$/.test(host) ? 'reddit' : /instagram\.com$/.test(host) ? 'instagram' : null;
+  // ARGUS's demo pages on this computer say which site they stand in for.
+  const DEMO = /^(localhost|127\.0\.0\.1)$/.test(host) ? document.querySelector('meta[name="argus-demo-site"]')?.content : null;
+  const PLATFORM = DEMO && ['youtube', 'reddit', 'instagram'].includes(DEMO) ? DEMO : /youtube\.com$/.test(host) ? 'youtube' : /reddit\.com$/.test(host) ? 'reddit' : /instagram\.com$/.test(host) ? 'instagram' : null;
   if (!PLATFORM) return;
 
   const text = el => (el?.textContent || '').replace(/\s+/g, ' ').trim();
@@ -18,7 +20,7 @@
   function author() {
     const path = location.pathname;
     if (PLATFORM === 'youtube') {
-      if (path === '/watch' || path.startsWith('/shorts/')) {
+      if (path === '/watch' || path.startsWith('/shorts/') || DEMO) {
         const link = document.querySelector('ytd-watch-metadata ytd-channel-name a, #owner ytd-channel-name a, ytd-reel-player-overlay-renderer a[href^="/@"]');
         const handle = (link?.getAttribute('href') || '').match(/\/(@[\w.-]+)/)?.[1];
         return handle ? { handle, name: text(link), anchor: link } : null;
@@ -35,7 +37,7 @@
       return { handle, name: handle, anchor: link || post };
     }
     if (PLATFORM === 'instagram') {
-      if (/^\/(?:p|reel|reels)\//.test(path)) {
+      if (/^\/(?:p|reel|reels)\//.test(path) || (DEMO && /\/(?:p|reel|reels)\//.test(path))) {
         const link = document.querySelector('article header a[href^="/"][role="link"], main header a[href^="/"][role="link"]');
         const handle = (link?.getAttribute('href') || '').match(/^\/([\w.]+)\/?$/)?.[1];
         return handle ? { handle, name: text(link), anchor: link } : null;

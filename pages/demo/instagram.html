@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="argus-demo-site" content="instagram">
+<title>Post · ARGUS demo</title>
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{font:14px/1.45 -apple-system,'Segoe UI',system-ui,sans-serif;background:#000;color:#f5f5f5}
+  .wrap{display:grid;grid-template-columns:72px 1fr;min-height:100vh}
+  .rail{border-right:1px solid #262626;padding:24px 0;display:flex;flex-direction:column;align-items:center;gap:26px;font-size:24px}
+  .rail .logo{font:italic 700 22px Georgia,serif}
+  .feed{display:flex;justify-content:center;gap:40px;padding:30px 20px}
+  article{width:min(470px,100%);border-bottom:1px solid #262626;padding-bottom:16px}
+  article header{display:flex;align-items:center;gap:10px;padding:8px 0}
+  .ring{width:36px;height:36px;border-radius:50%;padding:2px;background:conic-gradient(#feda75,#fa7e1e,#d62976,#962fbf,#4f5bd5,#feda75)}
+  .ring i{display:block;width:100%;height:100%;border-radius:50%;background:#7a5cff;border:2px solid #000}
+  article header a{color:#f5f5f5;font-weight:600;text-decoration:none}
+  article header small{color:#a8a8a8}
+  .photo{width:100%;aspect-ratio:1;object-fit:cover;border-radius:4px;display:block;border:1px solid #262626}
+  .icons{display:flex;gap:16px;font-size:24px;padding:10px 0 6px}
+  .likes{font-weight:600}
+  h1{font-size:14px;font-weight:400;margin-top:4px} h1 b{font-weight:600;margin-right:4px}
+  #comments{margin-top:8px;display:grid;gap:4px}.comment small{color:#a8a8a8}
+  form{display:flex;gap:10px;align-items:center;margin-top:10px;border-top:1px solid #262626;padding-top:10px}
+  form textarea{flex:1;resize:none;background:none;border:0;color:#f5f5f5;font:inherit;height:22px;outline:none}
+  form [role=button]{color:#0095f6;font-weight:600;cursor:pointer}
+  aside{width:300px;color:#a8a8a8;font-size:13px}aside b{color:#f5f5f5}
+  .demo{position:fixed;left:12px;bottom:10px;font-size:11.5px;color:#a8a8a8}
+</style>
+</head>
+<body>
+  <div class="wrap">
+    <nav class="rail"><span class="logo">Ig</span><span>⌂</span><span>⌕</span><span>▶</span><span>✉</span><span>♡</span></nav>
+    <div class="feed">
+      <article>
+        <header><span class="ring"><i></i></span><a href="/viral.pics.daily/" role="link">viral.pics.daily</a><small>· 3h</small></header>
+        <img class="photo" src="/demo/assets/2-stolen-copy-mirrored-cropped.jpg" alt="A woman laughing with a cup of coffee in a café">
+        <div class="icons">♡ 💬 ➤</div>
+        <div class="likes">18,402 likes</div>
+        <h1><b>viral.pics.daily</b>Sunday mornings hit different ☕✨ #cafe #mood</h1>
+        <div id="comments">
+          <div class="comment"><b>meera.k</b> where is this café?? <small>· 2h</small></div>
+          <div class="comment"><b>arjun_clicks</b> lighting is perfect <small>· 1h</small></div>
+        </div>
+        <form data-comment-form="#comments" data-me="you" data-enter="send">
+          <textarea aria-label="Add a comment…" placeholder="Add a comment…"></textarea>
+          <div role="button" tabindex="0" data-post>Post</div>
+        </form>
+      </article>
+      <aside><b>About this demo post</b><p style="margin-top:6px">This account re-posted a photo that Priya registered with ARGUS: flipped, cropped to a square, with a new watermark. Hover the photo and click <b>Check</b> to see what ARGUS finds.</p></aside>
+    </div>
+  </div>
+  <p class="demo">ARGUS demo page: an Instagram-style post on your own computer. Nothing is posted anywhere.</p>
+<script src="/demo/demo.js"></script>
+</body>
+</html>

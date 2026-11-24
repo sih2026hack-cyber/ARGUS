@@ -3,6 +3,8 @@
 **Length:** about 9½ minutes. Intro film 3½ min · live demo 5½ min · close 30 s.
 **Files:** `demo/intro.html` (the intro film) · `demo/assets/` (images for the Provenance and Lens parts).
 
+> **No real accounts needed:** http://localhost:8787/demo has pages that look and behave like **WhatsApp, YouTube, Instagram and X**. The ARGUS extension (0.7.0+) treats each one like the real site, so you can record every step below on them instead: use `/demo/whatsapp` for 2.3, `/demo/youtube?v=demo-trickshot` and `?v=demo-buscrash` for 2.1–2.2, `/demo/instagram` for Lens and Provenance (hover the photo → **Check**), and for Identity issue a credential to **youtube @northfielduniversity** on /admin, then open `?v=demo-firstsong` (✓ verified) and `?v=demo-admissions` (⚠ look-alike).
+
 ---
 
 ## Before you record (15 minutes)

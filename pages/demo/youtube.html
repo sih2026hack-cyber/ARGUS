@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="argus-demo-site" content="youtube">
+<title>Video · ARGUS demo</title>
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{font:14px/1.45 Roboto,'Segoe UI',system-ui,sans-serif;background:#0f0f0f;color:#f1f1f1}
+  .top{display:flex;align-items:center;gap:16px;padding:10px 24px;position:sticky;top:0;background:#0f0f0f;z-index:1}
+  .logo{font-weight:800;font-size:20px;letter-spacing:-.5px}.logo i{display:inline-block;width:30px;height:21px;border-radius:6px;background:#f00;vertical-align:-4px;margin-right:4px}
+  .top .search{flex:0 1 560px;margin:0 auto;padding:9px 18px;border-radius:40px;border:1px solid #303030;color:#aaa}
+  .page{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:24px;max-width:1700px;margin:0 auto;padding:12px 24px 60px}
+  .player{aspect-ratio:16/9;max-height:52vh;width:auto;border-radius:12px;overflow:hidden;position:relative;background:#000}
+  .player video,.player img{width:100%;height:100%;object-fit:cover;display:block}
+  h1.ytd-watch-metadata{font-size:20px;font-weight:700;margin:14px 0 10px;line-height:1.35}
+  ytd-watch-metadata{display:block}
+  .owner{display:flex;align-items:center;gap:12px}
+  .owner i{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#ff9a3c,#e63e6d);display:block}
+  ytd-channel-name a{color:#f1f1f1;font-weight:600;font-size:16px;text-decoration:none}
+  .owner small{display:block;color:#aaa;font-size:12px}
+  .sub{margin-left:14px;padding:9px 16px;border-radius:20px;background:#f1f1f1;color:#0f0f0f;font-weight:600;border:0}
+  #description-inline-expander{margin-top:12px;background:#272727;border-radius:12px;padding:12px;font-size:14px}
+  h2{font-size:20px;margin:24px 0 16px}
+  ytd-commentbox{display:flex;gap:14px;align-items:flex-start}
+  ytd-commentbox .me{width:40px;height:40px;border-radius:50%;background:#7c4dff;flex:none;display:grid;place-items:center;font-weight:700}
+  ytd-commentbox .area{flex:1}
+  ytd-commentbox [contenteditable]{min-height:24px;border-bottom:1px solid #717171;outline:none;padding:4px 0}
+  ytd-commentbox [contenteditable]:empty::before{content:attr(aria-placeholder);color:#aaa}
+  .actions{display:flex;justify-content:flex-end;gap:8px;margin-top:8px}
+  .actions button{padding:9px 16px;border-radius:20px;border:0;font-weight:600;cursor:pointer;background:#3ea6ff;color:#0f0f0f}
+  .actions button.ghost{background:none;color:#f1f1f1}
+  .comment{padding:14px 0 0 54px;font-size:14px} .comment b{font-size:13px} .comment small{color:#aaa}
+  .side .card{display:flex;gap:8px;margin-bottom:10px}.side .thumb{width:168px;aspect-ratio:16/9;border-radius:8px;flex:none;background:#272727}
+  .side b{font-size:14px;display:block}.side span{color:#aaa;font-size:12px}
+  .demo{position:fixed;left:12px;bottom:10px;font-size:11.5px;color:#aaa}
+  nav.switch{display:flex;gap:8px;margin:10px 0 0}.switch a{color:#3ea6ff;font-size:13px}
+</style>
+</head>
+<body>
+  <div class="top"><span class="logo"><i></i>YouTube-style demo</span><div class="search">Search</div></div>
+  <div class="page">
+    <div>
+      <div class="player"><img id="thumb" alt=""></div>
+      <ytd-watch-metadata>
+        <h1 class="ytd-watch-metadata" id="title"></h1>
+        <div class="owner"><i></i><div><ytd-channel-name><a id="channel" href="/@northfielduniversity">Northfield University</a></ytd-channel-name><small id="subs"></small></div><button class="sub" type="button">Subscribe</button></div>
+        <div id="description-inline-expander"></div>
+      </ytd-watch-metadata>
+      <nav class="switch">Other demo videos: <a href="/demo/youtube?v=demo-trickshot">trick shot</a> · <a href="/demo/youtube?v=demo-buscrash">bus accident news</a> · <a href="/demo/youtube?v=demo-firstsong">first time singing (Northfield University)</a> · <a href="/demo/youtube?v=demo-admissions">admissions (look-alike channel)</a></nav>
+      <h2 id="count">Comments</h2>
+      <ytd-commentbox data-comment-form="#comments" data-me="@you">
+        <div class="me">Y</div>
+        <div class="area">
+          <div contenteditable="true" role="textbox" aria-label="Add a comment" aria-placeholder="Add a comment…"></div>
+          <div class="actions"><button type="button" class="ghost">Cancel</button><button type="button" data-post>Comment</button></div>
+        </div>
+      </ytd-commentbox>
+      <div id="comments"></div>
+    </div>
+    <div class="side">
+      <div class="card"><div class="thumb"></div><div><b>Top 10 dunks of the season</b><span>Hoops Daily · 1.2M views</span></div></div>
+      <div class="card"><div class="thumb"></div><div><b>How to shoot a perfect free throw</b><span>Coach Ravi · 340K views</span></div></div>
+      <div class="card"><div class="thumb"></div><div><b>Campus tour 2026</b><span>Northfield University · 88K views</span></div></div>
+    </div>
+  </div>
+  <p class="demo">ARGUS demo page: a YouTube-style video page on your own computer. Nothing is posted anywhere.</p>
+<script src="/demo/youtube.js"></script>
+<script src="/demo/demo.js"></script>
+</body>
+</html>

@@ -59,7 +59,10 @@
     [/^web\.telegram\.org$/, 'telegram'], [/^mail\.google\.com$/, 'gmail'],
   ];
   const detectSite = (h) => (HOSTS.find(([re]) => re.test(h)) || [null, /^https?:$/.test(location.protocol) ? 'web' : null])[1];
-  const SITE = window.__ARGUS_SITE || detectSite(location.hostname);
+  // The ARGUS server's demo pages (/demo/...) say which site they stand in for, so the demo
+  // behaves like the real thing. Only honoured on this computer.
+  const DEMO = /^(localhost|127\.0\.0\.1)$/.test(location.hostname) ? document.querySelector('meta[name="argus-demo-site"]')?.content : null;
+  const SITE = window.__ARGUS_SITE || DEMO || detectSite(location.hostname);
   const CONF = SITES[SITE];
   if (!CONF) return;
   // Shows in the page's DevTools Console (filter: Argus) — so a writer can tell us what they see.

@@ -66,6 +66,10 @@ const assets=new Map([
   ['/register',['pages/register.html','text/html']],['/register.js',['pages/register.js','text/javascript']],
   ['/admin',['pages/admin.html','text/html']],['/admin.js',['pages/admin.js','text/javascript']],
   ['/moderator',['pages/moderator.html','text/html']],['/moderator.js',['pages/moderator.js','text/javascript']],
+  // Demo pages that stand in for WhatsApp, YouTube, Instagram and X, for recording ARGUS without real accounts.
+  ['/demo',['pages/demo/index.html','text/html']],['/demo/whatsapp',['pages/demo/whatsapp.html','text/html']],
+  ['/demo/youtube',['pages/demo/youtube.html','text/html']],['/demo/instagram',['pages/demo/instagram.html','text/html']],
+  ['/demo/x',['pages/demo/x.html','text/html']],['/demo/demo.js',['pages/demo/demo.js','text/javascript']],['/demo/youtube.js',['pages/demo/youtube.js','text/javascript']],
   ['/pages.css',['pages/pages.css','text/css']],
 ]);
 // The Lens page shows the user's own files (blob: URLs) and uses the Inter web font.
@@ -89,7 +93,12 @@ http.createServer(async(req,res)=>{
     if(await trustApi(req,res,url))return;
     const sample=url.pathname.match(/^\/lens\/samples\/([a-z-]+\.(webp|mp4))$/);
     if(sample&&req.method==='GET'&&fs.existsSync(path.join(ROOT,'lens/page/samples',sample[1]))){res.writeHead(200,{'Content-Type':sample[2]==='mp4'?'video/mp4':'image/webp','Cache-Control':'max-age=3600','X-Content-Type-Options':'nosniff'});res.end(fs.readFileSync(path.join(ROOT,'lens/page/samples',sample[1])));return;}
-    const asset=assets.get(url.pathname);if(!asset||req.method!=='GET')return json(res,{error:'Not found'},404);
+    // Demo images (demo/assets) for the demo pages and the recording.
+    const demoAsset=url.pathname.match(/^\/demo\/assets\/([\w-]+\.(jpg|webp|png))$/);
+    if(demoAsset&&req.method==='GET'&&fs.existsSync(path.join(ROOT,'demo/assets',demoAsset[1]))){res.writeHead(200,{'Content-Type':demoAsset[2]==='jpg'?'image/jpeg':'image/'+demoAsset[2],'Cache-Control':'max-age=3600','X-Content-Type-Options':'nosniff'});res.end(fs.readFileSync(path.join(ROOT,'demo/assets',demoAsset[1])));return;}
+    // The Instagram-style demo post lives at /demo/instagram/p/<id>/ like a real post, so ARGUS reads its post ID.
+    if(/^\/demo\/instagram(\/p\/[\w-]+\/?)?$/.test(url.pathname)&&url.pathname!=='/demo/instagram/p/DEMOcafe01/'){res.writeHead(302,{Location:'/demo/instagram/p/DEMOcafe01/'});res.end();return;}
+    const asset=assets.get(url.pathname==='/demo/instagram/p/DEMOcafe01/'?'/demo/instagram':url.pathname);if(!asset||req.method!=='GET')return json(res,{error:'Not found'},404);
     res.writeHead(200,{'Content-Type':asset[1]+'; charset=utf-8','Cache-Control':'no-cache','X-Content-Type-Options':'nosniff','Content-Security-Policy':CSP});res.end(fs.readFileSync(path.join(ROOT,asset[0])));
   }catch(error){json(res,{error:error.status?error.message:'Operation failed. Check service availability and retry.'},error.status||500);}
 }).listen(settings.port,server.host,()=>{console.log(`ARGUS listening on ${server.host}:${settings.port}${server.isPublic?' (public, password '+(server.password?'set':'MISSING')+')':''}`);if(adminKey&&!env.ARGUS_ADMIN_SECRET&&!env.ARGUS_MODERATOR_SECRET)console.log(`Admin key for http://localhost:${settings.port}/admin this run: ${adminKey}`);else if(!adminKey)console.log('Set ARGUS_ADMIN_SECRET to use /admin.');});

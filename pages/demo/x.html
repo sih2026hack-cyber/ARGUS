@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="argus-demo-site" content="x">
+<title>Post · ARGUS demo</title>
+<style>
+  *{box-sizing:border-box;margin:0}
+  body{font:15px/1.45 'Segoe UI',system-ui,sans-serif;background:#000;color:#e7e9ea;display:flex;justify-content:center}
+  .col{width:min(600px,100%);border-left:1px solid #2f3336;border-right:1px solid #2f3336;min-height:100vh}
+  .head{padding:14px 16px;font-weight:700;font-size:20px;border-bottom:1px solid #2f3336}
+  .post{padding:14px 16px;border-bottom:1px solid #2f3336}
+  .who{display:flex;gap:10px;align-items:center}.who i{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#1d9bf0,#7856ff);display:block}
+  .who b{display:block}.who span{color:#71767b}
+  .post p{font-size:20px;margin:12px 0}.post .meta{color:#71767b}
+  .reply{display:flex;gap:12px;padding:14px 16px;border-bottom:1px solid #2f3336}
+  .reply .me{width:40px;height:40px;border-radius:50%;background:#f91880;flex:none}
+  .reply .area{flex:1}
+  .reply textarea{width:100%;background:none;border:0;color:#e7e9ea;font:20px/1.4 'Segoe UI',system-ui,sans-serif;resize:none;outline:none;min-height:56px}
+  .reply .row{display:flex;justify-content:flex-end}
+  .reply button{background:#1d9bf0;color:#fff;border:0;border-radius:20px;padding:8px 18px;font-weight:700;cursor:pointer}
+  #replies .comment{padding:12px 16px;border-bottom:1px solid #2f3336}#replies small{color:#71767b}
+  .demo{position:fixed;left:12px;bottom:10px;font-size:11.5px;color:#71767b}
+</style>
+</head>
+<body>
+  <div class="col">
+    <div class="head">Post</div>
+    <div class="post">
+      <div class="who"><i></i><div><b>Tamil Cinema Updates</b><span>@tamilcinemaupdates</span></div></div>
+      <p>Trailer for the new Thalapathy film drops tonight at 6 PM. Who's excited? 🔥🎬</p>
+      <div class="meta">8:30 PM · 412K views</div>
+    </div>
+    <div class="reply" data-comment-form="#replies" data-me="@you">
+      <div class="me"></div>
+      <div class="area"><textarea aria-label="Post text" placeholder="Post your reply"></textarea><div class="row"><button type="button" data-post>Reply</button></div></div>
+    </div>
+    <div id="replies">
+      <div class="comment"><b>@kollywoodfan</b> vera level waiting 🔥 <small>· 12m</small></div>
+      <div class="comment"><b>@movie_buff</b> hope the music is good this time <small>· 8m</small></div>
+    </div>
+  </div>
+  <p class="demo">ARGUS demo page: an X-style post on your own computer. Nothing is posted anywhere.</p>
+<script src="/demo/demo.js"></script>
+</body>
+</html>
