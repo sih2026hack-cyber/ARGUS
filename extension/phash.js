@@ -5,7 +5,7 @@
 //           whether a pixel is brighter than its right-hand neighbour. Resizing, recompression,
 //           filters and small edits barely change it, so a re-upload or screenshot still matches.
 //   mirror: the same for the image flipped left-to-right, so a mirrored copy is recognised.
-//   crops:  the same for 37 crops of the image (smaller centre and corner crops, one side
+//   crops:  the same for 45 crops of the image (smaller centre and corner crops, one side
 //           trimmed off, and square crops like Instagram makes). Stored when a creator registers
 //           an image, so a heavily cropped copy still matches one of them.
 //   sha256: the exact file, for "this is the very same file".
@@ -55,7 +55,8 @@
       out.push([0, 0, W, H * s], [0, H * (1 - s), W, H * s], [0, 0, W * s, H], [W * (1 - s), 0, W * s, H]);
     }
     const side = Math.min(W, H);                                // square crops, as Instagram makes
-    for (const a of [0, 0.5, 1]) out.push(W >= H ? [(W - side) * a, 0, side, side] : [0, (H - side) * a, side, side]);
+    // Every 10% across: a square crop shifted by just 5% of the photo already changes ~8 bits.
+    for (let a = 0; a <= 1.0001; a += 0.1) out.push(W >= H ? [(W - side) * a, 0, side, side] : [0, (H - side) * a, side, side]);
     out.push([(W - side * 0.8) / 2, (H - side * 0.8) / 2, side * 0.8, side * 0.8]);
     return out;
   }

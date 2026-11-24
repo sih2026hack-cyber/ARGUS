@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARGUS intro film</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Atkinson+Hyperlegible:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<!--
+  ARGUS intro film. Open full screen (F11) at 1920×1080 and screen-record it.
+  Plays by itself in time with the voiceover in demo/VIDEO_SCRIPT.md.
+    Space  pause / play       → / ←  next / previous scene
+    R      restart            H      hide / show the progress line
+  Start at a scene: intro.html#5
+-->
+<style>
+  :root{
+    --ink:#0F1535; --ink-2:#18204A; --ink-3:#232C60; --paper:#F2F0FA; --mist:#A9AEDB;
+    --iris:#8E7DFF; --ember:#FF6A47; --mint:#4FE0A8;
+    --display:'Unbounded','Segoe UI',system-ui,sans-serif; --text:'Atkinson Hyperlegible','Segoe UI',system-ui,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%;background:var(--ink);color:var(--paper);font-family:var(--text);overflow:hidden}
+  /* The frame is always 16:9 and scales to the window, so a 1920×1080 recording is pixel-perfect. */
+  #stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;overflow:hidden;
+    background:radial-gradient(1200px 800px at 78% 40%,var(--ink-2),var(--ink) 70%)}
+  .scene{position:absolute;inset:0;padding:120px 150px;opacity:0;visibility:hidden;transition:opacity .9s ease,visibility 0s .9s}
+  .scene.on{opacity:1;visibility:visible;transition:opacity .9s ease}
+  .r{opacity:0;transform:translateY(18px);transition:opacity .8s ease,transform .8s cubic-bezier(.2,.7,.2,1)}
+  .r.in{opacity:1;transform:none}
+  h1,h2{font-family:var(--display);font-weight:600;letter-spacing:-.02em;line-height:1.08}
+  h1{font-size:96px;max-width:1400px}
+  h2{font-size:64px;max-width:1620px}
+  .lead{font-size:34px;line-height:1.45;color:var(--mist);max-width:1100px;margin-top:36px}
+  .ember{color:var(--ember)} .mint{color:var(--mint)} .iris{color:var(--iris)}
+  #bar{position:absolute;left:0;bottom:0;height:5px;width:0;background:var(--iris);opacity:.7}
+  body.clean #bar{display:none}
+
+  /* The watchman's eye: a ring of small eyes around an iris. */
+  .eye{position:absolute;right:160px;top:50%;width:560px;height:560px;margin-top:-280px}
+  .eye svg{width:100%;height:100%;overflow:visible}
+  .eye .lid{transform-origin:50% 50%;transform:scaleY(.04);transition:transform 1.6s cubic-bezier(.3,.8,.2,1)}
+  .scene.on .eye .lid{transform:scaleY(1)}
+  .eye .ring g{opacity:0;transition:opacity .5s ease}
+  .eye.open .ring g{opacity:1}
+  .eye .iris-dot{transform-origin:280px 280px;animation:look 7s ease-in-out infinite}
+  @keyframes look{0%,100%{transform:translate(0,0)}30%{transform:translate(-26px,6px)}60%{transform:translate(22px,-8px)}}
+
+  /* Scene: the feed of problems */
+  .feed{position:absolute;right:150px;top:70px;width:760px;display:grid;gap:16px}
+  .post{background:var(--ink-2);border:1px solid var(--ink-3);border-radius:20px;padding:18px 26px;position:relative}
+  .post .who{display:flex;align-items:center;gap:12px;font-size:22px;font-weight:700}
+  .post .who i{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--iris),var(--ink-3));display:block}
+  .post p{font-size:24px;margin-top:6px;color:var(--paper);line-height:1.35}
+  .post .pic{height:84px;border-radius:12px;margin-top:10px;background:linear-gradient(160deg,#F7A35C,#C2487A 55%,#3B2A6E)}
+  .tag{display:inline-block;margin-top:10px;padding:6px 14px;border-radius:999px;font-size:19px;font-weight:700;color:var(--ink);background:var(--ember)}
+  .tag.fixed{background:var(--mint)}
+  .tagline{position:absolute;left:150px;top:120px;width:760px}
+
+  /* Scene: tools that don't talk to each other */
+  .tools{display:grid;grid-template-columns:repeat(3,1fr);gap:28px 34px;margin-top:64px;max-width:1620px}
+  .tool{border:1px solid var(--ink-3);border-radius:20px;padding:26px 30px;background:var(--ink-2)}
+  .tool b{display:block;font-family:var(--display);font-weight:600;font-size:26px}
+  .tool span{display:block;font-size:22px;color:var(--mist);margin-top:8px;line-height:1.4}
+  .tool em{display:block;font-style:normal;font-size:21px;color:var(--ember);margin-top:10px}
+
+  /* Scene: if nothing changes */
+  .future{list-style:none;padding:0;margin-top:56px;display:grid;gap:26px;max-width:1500px}
+  .future li{font-size:42px;line-height:1.3;padding-left:46px;position:relative}
+  .future li::before{content:'';position:absolute;left:0;top:.5em;width:22px;height:22px;border-radius:50%;background:var(--ember);box-shadow:0 0 24px var(--ember)}
+  .future li small{display:block;font-size:26px;color:var(--mist);margin-top:4px}
+
+  /* Scene: the five engines */
+  .engines{display:grid;gap:18px;margin-top:54px;max-width:1620px}
+  .engine{display:grid;grid-template-columns:120px 470px 1fr;align-items:baseline;gap:26px;padding:20px 0;border-top:1px solid var(--ink-3)}
+  .engine .n{font-family:var(--display);font-size:44px;color:var(--iris)}
+  .engine b{font-family:var(--display);font-weight:600;font-size:32px}
+  .engine span{font-size:27px;color:var(--mist);line-height:1.4}
+
+  /* Scene: how it fits together */
+  .flows{display:grid;gap:40px;margin-top:70px}
+  .flow{display:flex;align-items:center;gap:22px;font-size:28px}
+  .flow .node{padding:18px 26px;border-radius:16px;background:var(--ink-2);border:1px solid var(--ink-3);white-space:nowrap}
+  .flow .node.key{border-color:var(--iris);color:var(--paper);box-shadow:0 0 0 1px var(--iris) inset}
+  .flow .node.out{border-color:var(--mint);color:var(--mint)}
+  .flow .arrow{width:56px;height:2px;background:var(--mist);position:relative;flex:none}
+  .flow .arrow::after{content:'';position:absolute;right:-2px;top:-6px;border:7px solid transparent;border-left:10px solid var(--mist)}
+  .flow label{width:250px;font-family:var(--display);font-weight:600;font-size:24px;color:var(--mist);flex:none}
+
+  /* Scene: saving the future: ember lines turn mint */
+  .turn{list-style:none;padding:0;margin-top:70px;display:grid;gap:44px;max-width:1620px}
+  .turn li{display:grid;grid-template-columns:660px 1fr;gap:40px;align-items:baseline;font-size:36px;line-height:1.35}
+  .turn .was{color:var(--ember);text-decoration:line-through;text-decoration-thickness:2px;opacity:.75}
+  .turn .now{color:var(--mint);font-weight:700}
+
+  .center{display:flex;flex-direction:column;justify-content:center;height:100%}
+  .final h1{font-size:150px;letter-spacing:-.03em}
+  .hint{position:fixed;left:16px;bottom:14px;font:14px var(--text);color:var(--mist);opacity:.8;transition:opacity 1s}
+  body.started .hint{opacity:0}
+  @media (prefers-reduced-motion:reduce){.r,.scene,.eye .lid{transition:none}.eye .iris-dot{animation:none}}
+</style>
+</head>
+<body>
+<div id="stage">
+
+  <!-- 1 · Cold open -->
+  <section class="scene" data-secs="12">
+    <div class="center" style="max-width:1050px">
+      <h1 class="r" data-at="400">Billions of posts.<br>Every single day.</h1>
+      <p class="lead r" data-at="3200">Is it safe? Is it real? Whose is it? Who is really speaking?</p>
+      <p class="lead r" data-at="6900" style="color:var(--paper)">Right now, nobody checks all four.</p>
+    </div>
+    <div class="eye" data-eye></div>
+  </section>
+
+  <!-- 2 · The problem, as a feed -->
+  <section class="scene" data-secs="36">
+    <div class="tagline">
+      <h2 class="r" data-at="300">This is a normal day online.</h2>
+      <p class="lead r" data-at="2100">Every one of these posts looks ordinary. Every one of them is a problem nobody flagged.</p>
+    </div>
+    <div class="feed">
+      <div class="post r" data-at="4700"><div class="who"><i></i>Northfield University ✔︎</div><p>Admissions close tonight. Pay the fee at this link.</p><span class="tag r" data-at="7300">A fake account using the university's name</span></div>
+      <div class="post r" data-at="10000"><div class="who"><i></i>@daily.sunsets</div><div class="pic"></div><span class="tag r" data-at="12700">Someone else's photo, watermark cropped out</span></div>
+      <div class="post r" data-at="15300"><div class="who"><i></i>@breaking_now</div><p>Minister caught on camera accepting cash. Watch before it's deleted.</p><span class="tag r" data-at="18000">AI-made video, no label</span></div>
+      <div class="post r" data-at="20700"><div class="who"><i></i>Reply under a crash report</div><p>"That's sick!"</p><span class="tag r" data-at="23300">Cruel here, harmless elsewhere: filters can't tell</span></div>
+      <div class="post r" data-at="26000"><div class="who"><i></i>City Bank Support 🤖</div><p>Hi! I'm the official assistant. Please confirm your account number.</p><span class="tag r" data-at="28700">A bot nobody authorised</span></div>
+    </div>
+  </section>
+
+  <!-- 3 · What exists -->
+  <section class="scene" data-secs="23">
+    <h2 class="r" data-at="200">Good tools already exist.</h2>
+    <p class="lead r" data-at="1600" style="margin-top:20px">Each one answers a single question.</p>
+    <div class="tools">
+      <div class="tool r" data-at="3400"><b>Safe Browsing</b><span>Warns about dangerous websites.</span><em>Not who made a post.</em></div>
+      <div class="tool r" data-at="5100"><b>TinEye</b><span>Finds matching images.</span><em>Not who owns them, or if reuse was allowed.</em></div>
+      <div class="tool r" data-at="6700"><b>Hive</b><span>Scores images for AI generation.</span><em>A score isn't proof of origin.</em></div>
+      <div class="tool r" data-at="8300"><b>C2PA Content Credentials</b><span>Signed creation history.</span><em>Lost when a photo is screenshotted.</em></div>
+      <div class="tool r" data-at="9900"><b>W3C Verifiable Credentials</b><span>A standard for proving identity.</span><em>Doesn't look at content at all.</em></div>
+      <div class="tool r" data-at="11500"><b>Perspective API</b><span>Scores comments for toxicity.</span><em>One comment at a time, with no context.</em></div>
+    </div>
+    <p class="lead r" data-at="14900" style="color:var(--paper);margin-top:54px">Six tools. Six websites. And you still have to connect the pieces yourself.</p>
+  </section>
+
+  <!-- 4 · If nothing changes -->
+  <section class="scene" data-secs="29">
+    <h2 class="r" data-at="200">If nothing changes</h2>
+    <ul class="future">
+      <li class="r" data-at="2700">Seeing stops being believing.<small>Any video can be faked, so real evidence gets dismissed as fake too.</small></li>
+      <li class="r" data-at="7500">Creators stop sharing.<small>Their work is copied, cropped and re-posted with no credit and no way to prove it was theirs.</small></li>
+      <li class="r" data-at="12400">Anyone can speak for an institution.<small>Fake accounts and AI agents use names they have no right to.</small></li>
+      <li class="r" data-at="17200">Moderation gets it wrong both ways.<small>Jokes and slang get punished, while real threats in context slip through.</small></li>
+      <li class="r" data-at="22000">Trust in everything online wears away.</li>
+    </ul>
+  </section>
+
+  <!-- 5 · Meet ARGUS -->
+  <section class="scene" data-secs="17">
+    <div class="center" style="max-width:1000px">
+      <h1 class="r" data-at="800" style="font-size:150px;letter-spacing:-.03em">ARGUS</h1>
+      <p class="lead r" data-at="3700" style="color:var(--paper);font-size:44px;line-height:1.3">One trust layer for everything you see and post online.</p>
+      <p class="lead r" data-at="8500">Named after the hundred-eyed watchman of Greek myth. A Chrome extension today: it works on any site, so no platform has to adopt it first.</p>
+    </div>
+    <div class="eye" data-eye data-open></div>
+  </section>
+
+  <!-- 6 · Five engines -->
+  <section class="scene" data-secs="37">
+    <h2 class="r" data-at="200">Five engines, working together</h2>
+    <div class="engines">
+      <div class="engine r" data-at="2500"><span class="n">01</span><b>Content Safety</b><span>Checks what you write in any text box, in the context of the post, and offers a kinder way to say it before it's sent.</span></div>
+      <div class="engine r" data-at="8600"><span class="n">02</span><b>Provenance &amp; Ownership</b><span>Gives creators a Content ID and a signed record, and recognises copies, crops and screenshots of their work.</span></div>
+      <div class="engine r" data-at="14800"><span class="n">03</span><b>Authenticity &amp; AI Media</b><span>Reads Content Credentials and checks images and video for signs of AI, harm and private details.</span></div>
+      <div class="engine r" data-at="21000"><span class="n">04</span><b>Identity &amp; Accountability</b><span>Verifiable credentials for people, organisations and AI agents, and a warning on look-alike accounts.</span></div>
+      <div class="engine r" data-at="27100"><span class="n">05</span><b>Responsible AI</b><span>Every decision explained, uncertain ones sent to a person, and each post summarised once and reused.</span></div>
+    </div>
+  </section>
+
+  <!-- 7 · What makes it different -->
+  <section class="scene" data-secs="28">
+    <h2 class="r" data-at="300">The engines share what they know</h2>
+    <div class="flows">
+      <div class="flow r" data-at="3200"><label>A comment</label><span class="node">Post detected</span><span class="arrow"></span><span class="node key">Context Memory: topic, summary, sensitivity, saved once</span><span class="arrow"></span><span class="node out">Judged in context</span></div>
+      <div class="flow r" data-at="10800"><label>An image</label><span class="node">Fingerprint in your browser</span><span class="arrow"></span><span class="node key">Registry + AI check</span><span class="arrow"></span><span class="node out">Creator, licence, AI signs</span></div>
+      <div class="flow r" data-at="17800"><label>An account</label><span class="node">Author on the page</span><span class="arrow"></span><span class="node key">Signed credential</span><span class="arrow"></span><span class="node out">Verified, or a look-alike</span></div>
+    </div>
+    <p class="lead r" data-at="22900" style="margin-top:60px">"That's sick!" under a trick shot is praise. Under a crash report it isn't. ARGUS knows the difference.</p>
+  </section>
+
+  <!-- 8 · How ARGUS saves the future -->
+  <section class="scene" data-secs="22">
+    <h2 class="r" data-at="200">How ARGUS changes that future</h2>
+    <ul class="turn">
+      <li class="r" data-at="2000"><span class="was">Seeing stops being believing</span><span class="now">Every image can be checked, with evidence shown</span></li>
+      <li class="r" data-at="5700"><span class="was">Creators stop sharing</span><span class="now">Creators keep their name on their work</span></li>
+      <li class="r" data-at="9400"><span class="was">Anyone can speak for an institution</span><span class="now">Real accounts and AI agents carry credentials</span></li>
+      <li class="r" data-at="13000"><span class="was">Moderation gets it wrong both ways</span><span class="now">Comments are judged in context, by AI that explains itself</span></li>
+      <li class="r" data-at="16700"><span class="was">Trust wears away</span><span class="now">Trust you can check, wherever you browse</span></li>
+    </ul>
+  </section>
+
+  <!-- 9 · Promise and hand-off to the live demo -->
+  <section class="scene final" data-secs="12">
+    <div class="center">
+      <p class="lead r" data-at="300" style="color:var(--paper);font-size:44px;line-height:1.35;max-width:1300px;margin:0">ARGUS doesn't decide what you're allowed to say. It shows you the evidence, and leaves the judgement to people.</p>
+      <h1 class="r" data-at="5500" style="margin-top:80px">Let's see it live.</h1>
+    </div>
+  </section>
+
+  <div id="bar"></div>
+</div>
+<p class="hint">Space: play / pause · ← →: scenes · R: restart · H: hide progress line · F11: full screen</p>
+
+<script>
+  // The eye: an iris inside a ring of 24 small eyes (Argus Panoptes, the hundred-eyed watchman).
+  const EYE = (() => {
+    const small = Array.from({ length: 24 }, (_, i) => {
+      const a = i / 24 * Math.PI * 2, x = 280 + Math.cos(a) * 250, y = 280 + Math.sin(a) * 250;
+      return `<g style="transition-delay:${i * 45}ms"><ellipse cx="${x}" cy="${y}" rx="15" ry="9" fill="none" stroke="#A9AEDB" stroke-width="2.5" transform="rotate(${a * 180 / Math.PI + 90} ${x} ${y})"/><circle cx="${x}" cy="${y}" r="4" fill="#8E7DFF"/></g>`;
+    }).join('');
+    return `<svg viewBox="0 0 560 560" aria-hidden="true"><g class="ring">${small}</g>
+      <g class="lid"><path d="M60 280 C150 140 410 140 500 280 C410 420 150 420 60 280Z" fill="#18204A" stroke="#8E7DFF" stroke-width="6"/>
+      <g class="iris-dot"><circle cx="280" cy="280" r="92" fill="#8E7DFF"/><circle cx="280" cy="280" r="46" fill="#0F1535"/><circle cx="252" cy="252" r="14" fill="#F2F0FA"/></g></g></svg>`;
+  })();
+  document.querySelectorAll('[data-eye]').forEach(e => { e.className = 'eye'; e.innerHTML = EYE; });
+
+  const stage = document.getElementById('stage'), scenes = [...document.querySelectorAll('.scene')], bar = document.getElementById('bar');
+  const fit = () => stage.style.transform = `translate(-50%,-50%) scale(${Math.min(innerWidth / 1920, innerHeight / 1080)})`;
+  addEventListener('resize', fit); fit();
+
+  const total = scenes.reduce((s, x) => s + Number(x.dataset.secs) * 1000, 0);
+  const startOf = i => scenes.slice(0, i).reduce((s, x) => s + Number(x.dataset.secs) * 1000, 0);
+  let index = -1, t0 = 0, elapsed = 0, playing = false, timers = [];
+
+  function show(i, from = 0) {
+    timers.forEach(clearTimeout); timers = [];
+    index = Math.max(0, Math.min(scenes.length - 1, i));
+    scenes.forEach((s, n) => s.classList.toggle('on', n === index));
+    const s = scenes[index];
+    s.querySelectorAll('.r').forEach(el => el.classList.remove('in'));
+    s.querySelectorAll('.eye').forEach(e => e.classList.remove('open'));
+    const reveal = (el, at) => { if (at <= from) el.classList.add('in'); else if (playing) timers.push(setTimeout(() => el.classList.add('in'), at - from)); };
+    s.querySelectorAll('.r').forEach(el => reveal(el, Number(el.dataset.at || 0)));
+    s.querySelectorAll('[data-eye]').forEach(e => { if (e.hasAttribute('data-open')) e.classList.add('open'); else if (playing) timers.push(setTimeout(() => e.classList.add('open'), Math.max(0, 1800 - from))); else e.classList.add('open'); });
+    if (playing) timers.push(setTimeout(() => { if (index < scenes.length - 1) { elapsed = startOf(index + 1); t0 = performance.now(); show(index + 1); } else pause(); }, Number(s.dataset.secs) * 1000 - from));
+  }
+  function play() { playing = true; document.body.classList.add('started'); t0 = performance.now(); show(index < 0 ? 0 : index, elapsed - startOf(Math.max(index, 0))); }
+  function pause() { if (!playing) return; elapsed += performance.now() - t0; playing = false; timers.forEach(clearTimeout); timers = []; scenes[index].querySelectorAll('.r').forEach(el => el.classList.add('in')); }
+  function jump(i) { const was = playing; playing = false; elapsed = startOf(Math.max(0, Math.min(scenes.length - 1, i))); index = i; if (was) play(); else show(i, 1e9); }
+  (function tick() { const now = playing ? elapsed + performance.now() - t0 : elapsed; bar.style.width = `${Math.min(100, now / total * 100)}%`; requestAnimationFrame(tick); })();
+
+  addEventListener('keydown', e => {
+    if (e.key === ' ') { e.preventDefault(); playing ? pause() : play(); }
+    else if (e.key === 'ArrowRight') jump(index + 1);
+    else if (e.key === 'ArrowLeft') jump(index - 1);
+    else if (e.key.toLowerCase() === 'r') { elapsed = 0; index = 0; playing = false; play(); }
+    else if (e.key.toLowerCase() === 'h') document.body.classList.toggle('clean');
+  });
+  const startAt = Number(location.hash.slice(1)) - 1;
+  if (startAt > 0) { index = startAt; elapsed = startOf(startAt); show(startAt, 1e9); } else { index = 0; show(0, 1e9); scenes[0].querySelectorAll('.r').forEach(el => el.classList.remove('in')); }
+</script>
+</body>
+</html>
