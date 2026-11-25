@@ -1,6 +1,22 @@
 # ARGUS: Cross-Platform Digital Trust & Responsible AI Plugin
 
-ARGUS is a Chrome extension and a small server that help people answer five questions while they browse YouTube, Reddit and Instagram:
+> **Vision: Verify who creates. Moderate what is shared. Protect what is owned. Trace how it circulates.**
+>
+> Team ARGUS · PSG College of Technology COMPUTE50 Golden Jubilee National Level Hackathon · Domain #10: Responsible AI and Resource Optimization
+
+| | |
+|---|---|
+| **Demo video** (2:43) | [demo/ARGUS-demo.mp4](demo/ARGUS-demo.mp4) |
+| **Presentation** | [ARGUS_COMPUTE50.pptx](ARGUS_COMPUTE50.pptx) · [PDF](ARGUS_COMPUTE50.pdf) |
+| **Try it without real accounts** | run the server, then open http://localhost:8787/demo (WhatsApp-, YouTube-, Instagram- and X-style pages) |
+
+ARGUS is a browser extension and a small server. It has three components, as in the presentation:
+
+- **SafeSend** (AI-powered content moderator): checks text, images and video before they are shared, in the context of the post, and suggests a gentler way to say it. *Engines 01 Content Safety and 03 Authenticity below.*
+- **ContentTrace** (ownership and traceability): gives creators a Content ID and a signed record, and recognises copies, crops and flips of their work. *Engine 02 Provenance.*
+- **ARGUS ID** (unified digital identity): verifiable credentials for people, organisations and AI agents, with warnings on look-alikes. *Engine 04 Identity.*
+
+It helps people answer five questions while they browse:
 
 1. Is this content potentially harmful?
 2. Is it original, authentic or modified?
@@ -43,7 +59,7 @@ Similar fingerprints are not proof of theft or ownership. A detector's predictio
 
 ```mermaid
 flowchart LR
-  subgraph Browser["Chrome extension"]
+  subgraph Browser["browser extension"]
     M["moderator.js<br/>comment box"]
     L["lens.js<br/>images & video"]
     I["identity.js<br/>author badge"]
@@ -120,7 +136,7 @@ Seven test suites run against fake model APIs on localhost, so no credits are sp
 | `lib/profanity.mjs` | Abusive-word masking (English, Hindi, Tamil) |
 | `lens/` | Lens engine (`src/`) and page (`page/`) |
 | `pages/` | `/moderator` (try the comment check), `/register` (creators) and `/admin` (review queue, credentials, registry) |
-| `extension/` | The Chrome (Manifest V3) extension |
+| `extension/` | The browser extension (Manifest V3) |
 | `supabase/argus-state.sql` | Optional tables when hosting without a disk |
 | `tests/` | End-to-end and unit tests |
 
