@@ -54,6 +54,10 @@
   .post .pic{height:84px;border-radius:12px;margin-top:10px;background:linear-gradient(160deg,#F7A35C,#C2487A 55%,#3B2A6E)}
   .tag{display:inline-block;margin-top:10px;padding:6px 14px;border-radius:999px;font-size:19px;font-weight:700;color:var(--ink);background:var(--ember)}
   .tag.fixed{background:var(--mint)}
+  .tag .num{display:inline-grid;place-items:center;width:28px;height:28px;margin-right:10px;border-radius:50%;background:var(--ink);color:var(--ember);font-size:17px;vertical-align:1px}
+  .post{transition:opacity .6s ease,transform .8s cubic-bezier(.2,.7,.2,1),box-shadow .6s ease,border-color .6s ease}
+  .post.now{border-color:var(--ember);box-shadow:0 0 0 1px var(--ember),0 12px 40px rgba(255,106,71,.18)}
+  .post.past{opacity:.38}
   .tagline{position:absolute;left:150px;top:120px;width:760px}
 
   /* Scene: tools that don't talk to each other */
@@ -119,11 +123,11 @@
       <p class="lead r" data-at="2100">Every one of these posts looks ordinary. Every one of them is a problem nobody flagged.</p>
     </div>
     <div class="feed">
-      <div class="post r" data-at="4700"><div class="who"><i></i>Northfield University ✔︎</div><p>Admissions close tonight. Pay the fee at this link.</p><span class="tag r" data-at="7300">A fake account using the university's name</span></div>
-      <div class="post r" data-at="10000"><div class="who"><i></i>@daily.sunsets</div><div class="pic"></div><span class="tag r" data-at="12700">Someone else's photo, watermark cropped out</span></div>
-      <div class="post r" data-at="15300"><div class="who"><i></i>@breaking_now</div><p>Minister caught on camera accepting cash. Watch before it's deleted.</p><span class="tag r" data-at="18000">AI-made video, no label</span></div>
-      <div class="post r" data-at="20700"><div class="who"><i></i>Reply under a crash report</div><p>"That's sick!"</p><span class="tag r" data-at="23300">Cruel here, harmless elsewhere: filters can't tell</span></div>
-      <div class="post r" data-at="26000"><div class="who"><i></i>City Bank Support 🤖</div><p>Hi! I'm the official assistant. Please confirm your account number.</p><span class="tag r" data-at="28700">A bot nobody authorised</span></div>
+      <div class="post r" data-at="4700"><div class="who"><i></i>Northfield University ✔︎</div><p>Admissions close tonight. Pay the fee at this link.</p><span class="tag r" data-at="7300"><b class="num">1</b>A fake account using the university's name</span></div>
+      <div class="post r" data-at="10000"><div class="who"><i></i>@daily.sunsets</div><div class="pic"></div><span class="tag r" data-at="12700"><b class="num">2</b>Someone else's photo, watermark cropped out</span></div>
+      <div class="post r" data-at="15300"><div class="who"><i></i>@breaking_now</div><p>Minister caught on camera accepting cash. Watch before it's deleted.</p><span class="tag r" data-at="18000"><b class="num">3</b>AI-made video, no label</span></div>
+      <div class="post r" data-at="20700"><div class="who"><i></i>Reply under a crash report</div><p>"That's sick!"</p><span class="tag r" data-at="23300"><b class="num">4</b>Cruel here, harmless elsewhere: filters can't tell</span></div>
+      <div class="post r" data-at="26000"><div class="who"><i></i>City Bank Support 🤖</div><p>Hi! I'm the official assistant. Please confirm your account number.</p><span class="tag r" data-at="28700"><b class="num">5</b>A bot nobody authorised</span></div>
     </div>
   </section>
 
@@ -168,11 +172,11 @@
   <section class="scene" data-secs="37">
     <h2 class="r" data-at="200">Five engines, working together</h2>
     <div class="engines">
-      <div class="engine r" data-at="2500"><span class="n">01</span><b>Content Safety</b><span>Checks what you write in any text box, in the context of the post, and offers a kinder way to say it before it's sent.</span></div>
-      <div class="engine r" data-at="8600"><span class="n">02</span><b>Provenance &amp; Ownership</b><span>Gives creators a Content ID and a signed record, and recognises copies, crops and screenshots of their work.</span></div>
-      <div class="engine r" data-at="14800"><span class="n">03</span><b>Authenticity &amp; AI Media</b><span>Reads Content Credentials and checks images and video for signs of AI, harm and private details.</span></div>
-      <div class="engine r" data-at="21000"><span class="n">04</span><b>Identity &amp; Accountability</b><span>Verifiable credentials for people, organisations and AI agents, and a warning on look-alike accounts.</span></div>
-      <div class="engine r" data-at="27100"><span class="n">05</span><b>Responsible AI</b><span>Every decision explained, uncertain ones sent to a person, and each post summarised once and reused.</span></div>
+      <div class="engine r" data-at="2500"><span class="n">01</span><b>Content Safety</b><span>Comments judged in the context of the post, with a kinder way to say it.</span></div>
+      <div class="engine r" data-at="8600"><span class="n">02</span><b>Provenance &amp; Ownership</b><span>Creators keep credit, even when their work is copied, cropped or flipped.</span></div>
+      <div class="engine r" data-at="14800"><span class="n">03</span><b>Authenticity &amp; AI Media</b><span>Signs of AI and private details, checked before you share.</span></div>
+      <div class="engine r" data-at="21000"><span class="n">04</span><b>Identity &amp; Accountability</b><span>Verified accounts and AI agents, and warnings on look-alikes.</span></div>
+      <div class="engine r" data-at="27100"><span class="n">05</span><b>Responsible AI</b><span>Explains every decision, and asks a person when it isn’t sure.</span></div>
     </div>
   </section>
 
@@ -184,7 +188,7 @@
       <div class="flow r" data-at="10800"><label>An image</label><span class="node">Fingerprint in your browser</span><span class="arrow"></span><span class="node key">Registry + AI check</span><span class="arrow"></span><span class="node out">Creator, licence, AI signs</span></div>
       <div class="flow r" data-at="17800"><label>An account</label><span class="node">Author on the page</span><span class="arrow"></span><span class="node key">Signed credential</span><span class="arrow"></span><span class="node out">Verified, or a look-alike</span></div>
     </div>
-    <p class="lead r" data-at="22900" style="margin-top:60px">"That's sick!" under a trick shot is praise. Under a crash report it isn't. ARGUS knows the difference.</p>
+    <p class="lead r" data-at="22900" style="margin-top:60px">“That’s sick!” is praise under a trick shot, and cruel under a crash report. ARGUS knows the difference.</p>
   </section>
 
   <!-- 8 · How ARGUS saves the future -->
@@ -212,13 +216,9 @@
 <p class="hint">Space: play / pause · ← →: scenes · R: restart · H: hide progress line · F11: full screen</p>
 
 <script>
-  // The eye: an iris inside a ring of 24 small eyes (Argus Panoptes, the hundred-eyed watchman).
+  // The ARGUS logo: the watchman's eye.
   const EYE = (() => {
-    const small = Array.from({ length: 24 }, (_, i) => {
-      const a = i / 24 * Math.PI * 2, x = 280 + Math.cos(a) * 250, y = 280 + Math.sin(a) * 250;
-      return `<g style="transition-delay:${i * 45}ms"><ellipse cx="${x}" cy="${y}" rx="15" ry="9" fill="none" stroke="#A9AEDB" stroke-width="2.5" transform="rotate(${a * 180 / Math.PI + 90} ${x} ${y})"/><circle cx="${x}" cy="${y}" r="4" fill="#8E7DFF"/></g>`;
-    }).join('');
-    return `<svg viewBox="0 0 560 560" aria-hidden="true"><g class="ring">${small}</g>
+    return `<svg viewBox="0 0 560 560" aria-hidden="true">
       <g class="lid"><path d="M60 280 C150 140 410 140 500 280 C410 420 150 420 60 280Z" fill="#18204A" stroke="#8E7DFF" stroke-width="6"/>
       <g class="iris-dot"><circle cx="280" cy="280" r="92" fill="#8E7DFF"/><circle cx="280" cy="280" r="46" fill="#0F1535"/><circle cx="252" cy="252" r="14" fill="#F2F0FA"/></g></g></svg>`;
   })();
@@ -239,7 +239,11 @@
     const s = scenes[index];
     s.querySelectorAll('.r').forEach(el => el.classList.remove('in'));
     s.querySelectorAll('.eye').forEach(e => e.classList.remove('open'));
-    const reveal = (el, at) => { if (at <= from) el.classList.add('in'); else if (playing) timers.push(setTimeout(() => el.classList.add('in'), at - from)); };
+    // Showing a post puts it in focus and steps the earlier ones back.
+    const focus = el => { if (!el.classList.contains('post')) return; const posts = [...el.parentElement.querySelectorAll('.post')]; posts.forEach(p => { const before = posts.indexOf(p) < posts.indexOf(el); p.classList.toggle('past', before); p.classList.toggle('now', p === el); }); };
+    const on = el => { el.classList.add('in'); focus(el); };
+    s.querySelectorAll('.post').forEach(p => p.classList.remove('past', 'now'));
+    const reveal = (el, at) => { if (at <= from) on(el); else if (playing) timers.push(setTimeout(() => on(el), at - from)); };
     s.querySelectorAll('.r').forEach(el => reveal(el, Number(el.dataset.at || 0)));
     s.querySelectorAll('[data-eye]').forEach(e => { if (e.hasAttribute('data-open')) e.classList.add('open'); else if (playing) timers.push(setTimeout(() => e.classList.add('open'), Math.max(0, 1800 - from))); else e.classList.add('open'); });
     if (playing) timers.push(setTimeout(() => { if (index < scenes.length - 1) { elapsed = startOf(index + 1); t0 = performance.now(); show(index + 1); } else pause(); }, Number(s.dataset.secs) * 1000 - from));
