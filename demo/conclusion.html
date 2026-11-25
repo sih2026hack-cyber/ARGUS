@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ARGUS conclusion</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;600;800&family=Atkinson+Hyperlegible:wght@400;700&display=swap" rel="stylesheet">
+<!-- The closing frame of the ARGUS demo video: the vision, line by line. Space plays it. -->
+<style>
+  :root{--ink:#0F1535;--ink-2:#18204A;--ink-3:#232C60;--paper:#F2F0FA;--mist:#A9AEDB;--iris:#8E7DFF;--mint:#4FE0A8}
+  *{box-sizing:border-box;margin:0}
+  html,body{height:100%;background:var(--ink);overflow:hidden}
+  #stage{position:absolute;left:50%;top:50%;width:1920px;height:1080px;transform-origin:center;color:var(--paper);
+    font-family:'Atkinson Hyperlegible','Segoe UI',sans-serif;background:radial-gradient(1100px 760px at 50% 42%,var(--ink-2),var(--ink) 72%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+  .r{opacity:0;transform:translateY(16px);transition:opacity .7s ease,transform .7s cubic-bezier(.2,.7,.2,1)}
+  .r.in{opacity:1;transform:none}
+  svg{width:170px;height:170px}
+  .label{font-family:Unbounded,sans-serif;font-weight:600;font-size:30px;color:var(--mist);letter-spacing:.02em;margin:26px 0 30px}
+  .vision{list-style:none;padding:0;display:grid;gap:18px}
+  .vision li{font-family:Unbounded,sans-serif;font-weight:600;font-size:66px;letter-spacing:-.02em;line-height:1.1}
+  .vision li b{color:var(--iris);font-weight:800}
+  .close{font-size:34px;color:var(--mist);margin-top:46px;max-width:1300px;line-height:1.4}
+  .link{font-family:Unbounded,sans-serif;font-size:28px;color:var(--mint);margin-top:26px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <svg class="r" viewBox="0 0 560 560" aria-hidden="true"><path d="M60 280 C150 140 410 140 500 280 C410 420 150 420 60 280Z" fill="#18204A" stroke="#8E7DFF" stroke-width="10"/><circle cx="280" cy="280" r="92" fill="#8E7DFF"/><circle cx="280" cy="280" r="46" fill="#0F1535"/><circle cx="252" cy="252" r="14" fill="#F2F0FA"/></svg>
+  <div class="label r">Our vision</div>
+  <ul class="vision">
+    <li class="r"><b>Verify</b> who creates.</li>
+    <li class="r"><b>Moderate</b> what is shared.</li>
+    <li class="r"><b>Protect</b> what is owned.</li>
+    <li class="r"><b>Trace</b> how it circulates.</li>
+  </ul>
+  <p class="close r">ARGUS: one browser extension for a safer, more authentic and more accountable internet, wherever you browse.</p>
+  <p class="link r">github.com/sih2026hack-cyber/argus</p>
+</div>
+<script>
+  const stage = document.getElementById('stage');
+  const fit = () => stage.style.transform = `translate(-50%,-50%) scale(${Math.min(innerWidth / 1920, innerHeight / 1080)})`;
+  addEventListener('resize', fit); fit();
+  // Each element appears at its data-at (ms) once Space is pressed; without a time, all show at once.
+  addEventListener('keydown', e => {
+    if (e.key !== ' ') return;
+    document.querySelectorAll('.r').forEach(el => setTimeout(() => el.classList.add('in'), Number(el.dataset.at || 0)));
+  });
+  if (location.hash === '#show') document.querySelectorAll('.r').forEach(el => el.classList.add('in'));
+</script>
+</body>
+</html>
