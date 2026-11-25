@@ -2,3 +2,6 @@
 node_modules/
 data/runtime/
 .cache/
+
+# Rendered demo video (large; share it directly, not through git)
+demo/*.mp4

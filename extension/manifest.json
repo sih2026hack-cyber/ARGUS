@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "ARGUS: digital trust for what you post and see",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "Checks what you write in any text box, on any site, before it is sent: in the context of the post, with a better way to say it. Checks images for AI, harm, private details and registered work, and shows who is verified behind a post. Talks to your ARGUS server.",
   "permissions": [
     "storage",
@@ -42,7 +42,9 @@
         "https://m.youtube.com/*",
         "https://www.reddit.com/*",
         "https://sh.reddit.com/*",
-        "https://www.instagram.com/*"
+        "https://www.instagram.com/*",
+        "http://localhost/*",
+        "http://127.0.0.1/*"
       ],
       "js": [
         "identity.js"
